@@ -1,0 +1,14 @@
+<h1>"Eagle Eye" - Hilfefunktion</h1>
+
+<p>Sie können als Team <b>{QUESTQUOTA}</b> Fragen zum Lösen der Klausur direkt an den Dozenten / die Dozentin richten (max. 500 Zeichen).</p>
+
+<div style="display:{FORMDIV};">
+	<form id="quest-form" method="POST" action="{QUESTLINK}">
+		<!-- <label for="quest-input"></label><br/> -->
+		<textarea autofocus maxlength="500" cols="50" rows="4" required placeholder="Frage an den Dozenten ..." name="quest-input" id="quest-input"></textarea>
+
+		<p><input class="btn btn-default btn-sm" type="SUBMIT" id="quest-submit" name="quest-submit" value="Frage absenden"></p>
+	</form>
+</div>
+
+<p align="right"><a href="{REVOKETLINK}">Fragen zurückziehen<br/>(! nur zu Demonstrationszwecken !)</a></p>

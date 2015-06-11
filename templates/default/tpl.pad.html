@@ -1,0 +1,59 @@
+<!-- pseudonym -->
+<div style="display:{NAMEDIV}" class="alert alert-danger">
+	Bitte geben Sie ihr Pseudonym ein:<br/>
+	<form id="nameform" method="POST" action="{NAMEFORMLINK}">
+		<input required type="text" name="nameform-input" maxlength="128" placeholder="Pseudonym" /><br/>
+		<br/><input class="btn btn-default btn-sm" type="SUBMIT" id="nameform-submit" value="Speichern">
+	</form>
+</div>
+<!-- / pseudonym -->
+
+<!--  policy agreement -->
+<script type="text/javascript">	
+$(document).ready(function(){
+    // dialog opener
+	$( "#PrivacyPolicyMODAL_trigger" ).click(function() {
+		$('#ilPrivacyPolicyMODAL').modal('show');
+    });
+	$( "#IPropPolicyMODAL_trigger" ).click(function() {
+		$('#ilIPropPolicyMODAL').modal('show');
+    });
+	$( "#RulesMODAL_trigger" ).click(function() {
+		$('#ilRulesMODAL').modal('show');
+    });
+});
+function showRadio() {
+    if (document.getElementById('IPropPolicy').checked) document.getElementById('ifYes').style.display = 'block'; 
+    else document.getElementById('ifYes').style.display = 'none';
+}
+</script>
+{PrivacyPolicyMODAL}
+{IPropPolicyMODAL}
+{RulesMODAL}
+<div style="display:{POLICIESDIV};" class="alert alert-danger">
+	Bitte willigen Sie in die <br/>
+	<form id="tac-form" method="POST" action="{CONSENTLINK}">
+		<div style="display:{PrivacyPolicyDISPLAY};"><input required {PrivacyPolicyDISABLED} type="{PrivacyPolicyTYPE}" name="tac[]" value="PrivacyPolicy" /> die <a id="PrivacyPolicyMODAL_trigger">Datenschutzerklärung </a><br/></div>
+		<div style="display:{IPropPolicyDISPLAY};"><input required {IPropPolicyDISABLED} type="{IPropPolicyTYPE}" name="tac[]" value="IPropPolicy" id="IPropPolicy" onclick="javascript:showRadio();"/> die <a id="IPropPolicyMODAL_trigger">Urheberrechtserklärung </a><br/></div>
+		<div id="ifYes" style="display:none; margin-left: 20px;">
+       		<input type="radio" name="attribution" value="no" checked/>  Ich verzichte auf die Nennung meines Klarnamens bei der Veröffentlichung der Klausur und möchte anonym bleiben.<br>
+			<input type="radio" name="attribution" value="yes" /> Ich bin mit der Nennung meines Klarnamens als Verfasser der Klausur bei der Veröffentlichung einverstanden. Hierzu wird die bestehende Pseudonymisierung durch das InteLeC-Zentrum der Universität Passau aufgehoben (vgl. Datenschutzerklärung).
+		</div>
+		<div style="display:{RulesDISPLAY};"><input required {RulesDISABLED} type="{RulesTYPE}" name="tac[]" value="Rules" /> die <a id="RulesMODAL_trigger">Nutzungsbedingungen</a><br/></div>
+		ein.<br/>
+		<br/><input class="btn btn-default btn-sm" type="SUBMIT" name="tac-submit" value="Speichern">
+	</form>
+</div>
+<!-- / policy agreement -->
+
+<!-- pad -->
+<div id="etherpad-lite" class="etherpad-liteRegular">
+    <div class="labeFullscreenPad">
+        <a id="enterFullscreenPad"><img src="./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/templates/images/fullscreen_gr.png" width="16" height="16" alt="{ENTER_FULLSCREEN}" title="{ENTER_FULLSCREEN}" class="etherpad-FullScreen-Enter" /></a>
+        <a id="leaveFullscreenPad"><img src="./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/templates/images/fullscreen_exit_gr.png" width="16" height="16" alt="{LEAVE_FULLSCREEN}" title="{LEAVE_FULLSCREEN}" class="etherpad-FullScreen-Leave" /></a>
+    </div>
+    <iframe id = "etherpad-liteFrame" name="etherpad-liteFrame"
+        src="{PROTOCOL}://{HOST}:{PORT}{PATH}/p/{ETHERPADLITE_ID}?showControls={SHOW_CONTROLS}&showChat={SHOW_CHAT}&showLineNumbers={SHOW_LINE_NUMBERS}&useMonospaceFont={USE_MONOSPACE_FONT}&userName={USER_NAME}&noColors={NO_COLORS}&showStyleBlock={SHOW_STYLE_BLOCK}&showListBlock={SHOW_LIST_BLOCK}&showRedoBlock={SHOW_REDO_BLOCK}&showColorBlock={SHOW_COLOR_BLOCK}&showHeadingBlock={SHOW_HEADING_BLOCK}&showImportExportBlock={SHOW_IMPORT_EXPORT_BLOCK}&showTimelineBlock={SHOW_TIMELINE_BLOCK}&language={LANGUAGE}&padVersion={EPADL_VERSION}">
+    </iframe>
+</div>
+<!-- / pad -->

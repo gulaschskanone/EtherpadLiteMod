@@ -1,0 +1,154 @@
+/**
+ * Some Customizations for the pad in ilias
+ *
+ * @author  Timon Amstutz <timon.amstutz@ilub.unibe.ch>
+ *
+ * **/
+
+ function customStart()
+{
+    /** Get Params from URL **/
+    var parameters = getUrlVars();
+
+    /** Set language via cookie **/
+    document.cookie = "language="+parameters["language"]+"; path=/";
+
+    /** Get rid of error in view if language is german **/
+    $("#mycolorpickersave").css({"padding":"2px","min-width":"70px"});
+    $("#mycolorpickercancel").css({"padding":"2px","min-width":"70px"});
+	
+	/** Add classes for data-key fields **/
+	$( "li[data-key='bold']" ).addClass("bold");
+    
+	$( "li[data-key='italic']" ).addClass("italic");
+    
+	$( "li[data-key='underline']" ).addClass("underline");
+    
+	$( "li[data-key='strikethrough']" ).addClass("strikethrough");
+    
+	$( "li[data-key='insertorderedlist']" ).addClass("insertorderedlist");
+    
+	$( "li[data-key='insertunorderedlist']" ).addClass("insertunorderedlist");
+   
+	$( "li[data-key='indent']" ).addClass("indent");
+    
+	$( "li[data-key='outdent']" ).addClass("outdent");
+    
+	$( "li[data-key='undo']" ).addClass("undo");
+    
+	$( "li[data-key='redo']" ).addClass("redo");
+    
+	$( "li[data-key='clearauthorship']" ).addClass("clearauthorship");
+   
+	$( "li[data-key='import_export']" ).addClass("import_export");
+    
+	$( "li[data-key='showTimeSlider']" ).addClass("showTimeSlider");
+    
+	$( "li[data-key='savedRevision']" ).addClass("savedRevision");
+    
+	$( "li[data-key='embed']" ).addClass("embed");
+    
+	$( "li[data-key='settings']" ).addClass("settings");
+    
+	// replace name input field
+	var span = $('<span />', {'id': 'myusernameedit'}).css({'display' : 'block'});
+	$("#myusernameedit").parent().append($(span).html(decodeURIComponent(parameters["userName"])));
+	$("#myusernameedit").remove();
+
+
+
+
+
+    /** Always hide Button for embedLinks (direct Link in Ilias should be used instaed) **/
+    $(".embed").hide();
+    /** Hide Settings Button (Settings are made in Ilias with tab settings) **/
+    $(".settings").hide();
+    /** Hide export doku wiki (comment this out if this is wanted) **/
+    $("#exportdokuwikia").hide();
+    $(".import_export a").removeClass("grouped-left");
+    $(".showTimeSlider a").removeClass("grouped-middle").addClass("grouped-left");
+    $("li[data-key='import_export']").after("<li class='separator'></li><li class='separator'></li>");
+
+    if(parameters["showStyleBlock"] != "true")
+    {
+        $(".bold").hide();
+        $(".italic").hide();
+        $(".underline").hide();
+        $(".strikethrough").hide();
+    }
+    if(parameters["showListBlock"] != "true")
+    {
+        $(".insertorderedlist").hide();
+        $(".insertunorderedlist").hide();
+        $(".indent").hide();
+        $(".outdent").hide();
+    }
+    if(parameters["showRedoBlock"] != "true")
+    {
+        $(".undo").hide();
+        $(".redo").hide();
+    }
+    if(parameters["showColorBlock"] != "true")
+    {
+        $(".clearauthorship").hide();
+    }
+    if(parameters["showHeadingBlock"] != "true")
+    {
+        $("#heading-selection").hide();
+    }
+    if(parameters["showImportExportBlock"] != "true")
+    {
+        $(".import_export").hide();
+    }
+    if(parameters["showTimelineBlock"] != "true")
+    {
+        $(".showTimeSlider").hide();
+        $(".savedRevision").hide();
+    }
+    
+        
+    /**
+     * <c.t.>
+     */
+    
+    // TOC on left hand
+   tableOfContents.enable = function(){
+    	$('#toc').show().css({"width" : "calc(15% - 10px)", "left" : "0"});
+    	$('#editorcontainer').css({"left" : "15%"});
+    	this.update();
+   }
+   tableOfContents.disable = function(){
+    	$('#toc').hide();
+    	$('#editorcontainer').css({"left" : "0"});
+   }
+   
+   // settings button and popup
+   $(".settings").show(function(){
+   		// hide line numbers checkbox
+	   	$("#options-linenoscheck").parent().hide();
+	   	// hide RTL checkbox
+	   	$("#options-rtlcheck").parent().hide();
+	   	// hide right section (e.g. export)
+	   	$("#settings .column").eq(1).hide();
+	   	// spread left section
+	   	$("#settings .column").eq(0).css({'width' : '100%'});
+	   	// scale down popup size 
+	   	$("#settings.popup").css('maxWidth', '300px');
+	   	// hide font selection
+	   	// $("#settings .column table tr").eq(0).hide();
+   });
+   
+}
+
+function getUrlVars()
+{
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+}
