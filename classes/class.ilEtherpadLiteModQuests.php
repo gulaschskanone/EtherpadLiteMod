@@ -59,15 +59,7 @@ class ilEtherpadLiteModQuests
 		return $rows;
 	}
 	
-	/**
-	 * Revoke Questions
-	 * ! only for demonstration !
-	 */
-	public function revokeQuestions(){
-		global $ilDB;
-		return $ilDB->manipulate("DELETE FROM rep_robj_xct_quests
-				WHERE pad_id = " . $ilDB->quote($this->getPadId(), "text"));
-	}
+
     
     /** 
      * class setter and getter

@@ -65,18 +65,14 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         {
             case "editProperties": // list all commands that need write permission here
             case "updateProperties":
+            case "revokeConsent": // DEMO
                 $this->checkPermission("write");
                 $this->$cmd();
                 break;
 
             case "showContent": // list all commands that need read permission here
             case "agreePolicy":
-     /*
-            case "revokeConsent":
-            case "revokeQuestions":
-            case "inspectPolicies":
             case "requestForHelp":
-     */
             case "savePseudonym":
             case "showProfile":
                 $this->checkPermission("read");
@@ -130,31 +126,34 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         // standard epermission tab
         $this->addPermissionTab();
         
-        /*
-        // tab for the "policy agreements" command
-        	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
-        	$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
-        	if($this->EtherpadLiteUser->getPseudonym())
-        	{
-        		if ($ilAccess->checkAccess("read", "", $this->object->getRefId()))
-        		{
-        			$ilTabs->addTab("agreement", "Einwilligungen / Spielregeln", $ilCtrl->getLinkTarget($this, "inspectPolicies"));
-        		}
-        	}        	
-        
-        
-        // eagle eye
-	        if ($ilAccess->checkAccess("read", "", $this->object->getRefId()))
-	        {
-	        	$ilTabs->addTab("requestForHelp", "Eagle Eye (Bitte um Hilfe)", $ilCtrl->getLinkTarget($this, "requestForHelp"));
-	        }
-	     */
-        
+       
         // profile
         if ($ilAccess->checkAccess("read", "", $this->object->getRefId()))
         {
         	$ilTabs->addTab("showProfile", "Nutzerprofil", $ilCtrl->getLinkTarget($this, "showProfile"));
         }
+        
+        //
+        // revoke
+        // !only fr demonstration !
+        if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
+        {
+        	$ilTabs->addTab("revokeConsent", "Einwilligungen zurückziehen (DEMO)", $ilCtrl->getLinkTarget($this, "revokeConsent"));
+        }
+
+        // eagle eye
+        include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
+        $this->EtherpadLiteUser = new ilEtherpadLiteModUser();
+        $missingPolicies = $this->EtherpadLiteUser->agreementsCompletely(array("PrivacyPolicy", "Rules", "IPropPolicy"), $this->object->getEtherpadLiteID());
+        
+        if($this->EtherpadLiteUser->getPseudonym() && empty($missingPolicies))
+        {
+	        if ($ilAccess->checkAccess("read", "", $this->object->getRefId()))
+	        {
+	        	$ilTabs->addTab("requestForHelp", "Eagle Eye (Bitte um Hilfe)", $ilCtrl->getLinkTarget($this, "requestForHelp"));
+	        }
+        }
+        
 
     }
 
@@ -239,7 +238,12 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	    
 	    
 		// available questions
-		// ...
+        $aq = new ilSelectInputGUI("Anzahl möglicher Fragen", "xct_av_questions");
+        $options = array();
+        for ($i = 2; $i<10; $i++) { $options[$i] = $i; }
+        $aq->setOptions($options);
+        $aq->setRequired(true);
+        $this->form->addItem($aq);
 
 	    
         // Show Elements depending on settings in the administration of the plugin
@@ -402,6 +406,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         	$values["other_lecturer_mail"] = $this->object->EagleEyeMail();
         }			
         
+        $values["xct_av_questions"]= $this->object->getAvailableQuestions();
         
         $this->form->setValuesByArray($values);
     }
@@ -442,6 +447,8 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             {
             	$this->object->setEagleEyeMail($this->form->getInput("other_lecturer_mail"));
             }
+            
+            $this->object->setAvailableQuestions($this->form->getInput("xct_av_questions"));
 
             $this->object->update();
             ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
@@ -539,60 +546,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		$ilCtrl->redirect($this, "showContent");
     }
     
-//
-// revoke questions
-// !!! only for demonstration !!!
-//
-    function revokeQuestions()
-    {
-    	global $lng, $ilCtrl;
-    	 
-    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModQuests.php");
-    	$this->EtherpadLiteQuests = new ilEtherpadLiteModQuests();
-    	$this->EtherpadLiteQuests->setPadId($this->object->getEtherpadLiteID());
-    
-    	if($this->EtherpadLiteQuests->revokeQuestions())	{
-    		// ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
-    	} else {
-    		ilUtil::sendFailure("error", true);
-    	}
-    	$ilCtrl->redirect($this, "showContent");
-    }
-
-    
-//
-// inspect policies
-//
-	function inspectPolicies()
-	{
-		global $tpl, $ilTabs, $ilCtrl;
-		$ilTabs->activateTab("agreement");
-		
-		$policiesTpl = new ilTemplate("tpl.policies.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLite");
-		
-		/**
-		 * MODALs
-		 
-		$policiesContent = $this->policiesContent();
-		foreach($policiesContent as $type => $data)
-		{
-			$policiesTpl->setVariable(
-				$type."MODAL", 
-				$this->buildModal(
-					$type."MODAL", 
-					$data['heading'], 
-					$data['content'],
-					$data['pdf']
-				)->getHTML()
-			);
-		}
-		*/
-		
-		// !only fr demonstration !
-		$policiesTpl->setVariable("REVOKETLINK",$ilCtrl->getLinkTarget($this, "revokeConsent"));
-		
-		$tpl->setContent($policiesTpl->get());
-	}
    
 //
 // eagle eye (request for help)
@@ -604,7 +557,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	{
 		
 		global $tpl, $ilTabs, $ilCtrl, $ilUtil;
-		$questquota = 2;
+		$questquota = $this->object->getAvailableQuestions();
 		$ilTabs->activateTab("requestForHelp");
 		
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModQuests.php");
@@ -612,41 +565,39 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		$this->EtherpadLiteQuests->setPadId($this->object->getEtherpadLiteID());
 		
 		
-		$customTpl = new ilTemplate("tpl.requestforhelp.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLite");
+		$customTpl = new ilTemplate("tpl.requestforhelp.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
 		$customTpl->setVariable("QUESTQUOTA", $questquota);
 		$customTpl->setVariable("QUESTLINK",$ilCtrl->getLinkTarget($this, "requestForHelp"));
 		
 		// save to DB, if POST and quota not achieved
 		if(isset($_POST["quest-submit"]) && $this->EtherpadLiteQuests->numberOfQuests() < $questquota)
 		{
-			global $ilUser;
+			include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
+    		$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
 
 			include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
 			$this->adminSettings = new ilEtherpadLiteModConfig();
 			
-			$this->EtherpadLiteQuests->setUsername(
-					(!$this->adminSettings->getValue("author_identification_conf") ? 
-							rawurlencode($ilUser->getFullname()) : 
-							$this->constructAuthorIdentification($this->object->getAuthorIdentification())));
+			$this->EtherpadLiteQuests->setUsername($this->EtherpadLiteUser->getPseudonym());
 			$this->EtherpadLiteQuests->setQuest(ilUtil::stripSlashes($_POST["quest-input"]));
 			
 			if($this->EtherpadLiteQuests->addQuest())
 			{ 
 				// to do: send mail to DOZENT
-				$mail_to = ($this->object->getCTEagleEyeMail() == "owner") ? ilObjUser::_lookupEmail($this->object->getOwner()) : $this->object->getCTEagleEyeMail();
+				$mail_to = ($this->object->getEagleEyeMail() == "owner") ? ilObjUser::_lookupEmail($this->object->getOwner()) : $this->object->getEagleEyeMail();
 				$subject = "compliant teamwork | Neue Frage";
 				
-				$headers = "From: Anita.huber@uni-passau.de\r\n";
+				$headers = "From: noreply@ct.uni-passau.de\r\n";
 				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+				$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 				
-				$message = '<html><body>';
-				$message .= '<h1>Compliant Teamwork: Eine neue Frage!</h1>';
-				$message .= '<p>Sie bekommen diese E-Mail, weil Sie als Dozent für eine "compliant teamwork"-Klausur eingetragen sind.</p>';
-				$message .= '<p><a href="'. $ilCtrl->getLinkTarget($this, "requestForHelp") .'">Zur Frage &gt;&gt;</a></p>';
-				$message .= '</body></html>';
+				$mailTpl = new ilTemplate("tpl.requestforhelpMail.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
 				
-				if(mail($mail_to, $subject, $message, $headers))
+				// require_once("Services/Init/classes/class.ilInitialisation.php");
+				// ilInitialisation::initILIAS();
+				$mailTpl->setVariable("LINK", ILIAS_HTTP_PATH ."/". $ilCtrl->getLinkTarget($this, "requestForHelp"));
+				
+				if(mail($mail_to, $subject, $mailTpl->get(), $headers))
 				{
 					ilUtil::sendSuccess("Frage gesendet!", true);
 				}
@@ -681,9 +632,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 				$list .= $panel->getHTML();
 			}
 		}
-		
-		// !only fr demonstration !
-		$customTpl->setVariable("REVOKETLINK",$ilCtrl->getLinkTarget($this, "revokeQuestions"));
 			
 		$tpl->setContent($customTpl->get().$list);
 		
@@ -742,6 +690,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 				}
 			}
 		}
+		
 		$tpl->setContent($profile->get());
 	}
 	
@@ -883,6 +832,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	$modal->setHeading($heading);
     	$modal->setId("il".$tplvar);
     	$modal->setBody($content.$link);
+    	$modal->setType(ilModalGUI::TYPE_LARGE);
     	return $modal;
     }
     

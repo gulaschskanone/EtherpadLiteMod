@@ -152,7 +152,18 @@ class ilEtherpadLiteModUser
 		return $missing;
 	}
 	
-	
+	/**
+	 * Revoke Consent
+	 * ! only for demonstration !
+	 */
+	public function revokeConsent(){
+		global $ilDB;
+		 $ilDB->manipulate("DELETE FROM rep_robj_xct_ip_agt
+				WHERE username = " . $ilDB->quote($this->getUsername(), "text"));
+		 $ilDB->manipulate("DELETE FROM rep_robj_xct_pol_agt
+				WHERE username = " . $ilDB->quote($this->getUsername(), "text"));
+		 return true;
+	}
     
     /** 
      * class setter and getter
