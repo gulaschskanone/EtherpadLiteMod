@@ -413,7 +413,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         else
         {
         	$values["xct_eagle_eye_mail"] = "other";
-        	$values["other_lecturer_mail"] = $this->object->EagleEyeMail();
+        	$values["other_lecturer_mail"] = $this->object->getEagleEyeMail();
         }			
         
         $values["xct_av_questions"]= $this->object->getAvailableQuestions();
