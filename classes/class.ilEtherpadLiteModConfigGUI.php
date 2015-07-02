@@ -67,6 +67,7 @@ class ilEtherpadLiteModConfigGUI extends ilPluginConfigGUI
                     "default_show_heading"      => array("type"=>"ilCheckboxInputGUI","info"=>"info_default_show_heading","options"=>null),
                     "default_show_imp_exp"      => array("type"=>"ilCheckboxInputGUI","info"=>"info_default_show_imp_exp","options"=>null),
                     "default_show_timeline"     => array("type"=>"ilCheckboxInputGUI","info"=>"info_default_show_timeline","options"=>null),
+                    "default_show_comment"     => array("type"=>"ilCheckboxInputGUI","info"=>"info_default_show_comment","options"=>null),
             ),
         ),
 
@@ -78,6 +79,7 @@ class ilEtherpadLiteModConfigGUI extends ilPluginConfigGUI
                 "conf_show_heading"             => array("type"=>"ilCheckboxInputGUI","info"=>"info_conf_show_heading","options"=>null),
                 "conf_show_imp_exp"       => array("type"=>"ilCheckboxInputGUI","info"=>"info_conf_show_imp_exp","options"=>null),
                 "conf_show_timeline"            => array("type"=>"ilCheckboxInputGUI","info"=>"info_conf_show_timeline","options"=>null),
+                "conf_show_comment"            => array("type"=>"ilCheckboxInputGUI","info"=>"info_conf_show_comment","options"=>null),
             ),
         ),
     );

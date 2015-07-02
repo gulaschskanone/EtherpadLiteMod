@@ -135,11 +135,12 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         
         //
         // revoke
-        // !only fr demonstration !
+        /* !only fr demonstration !
         if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
         {
         	$ilTabs->addTab("revokeConsent", "Einwilligungen zurückziehen (DEMO)", $ilCtrl->getLinkTarget($this, "revokeConsent"));
         }
+        */
 
         // eagle eye
         include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
@@ -363,6 +364,14 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
                 $timeline->setInfo($this->txt("info_show_timeline"));
                 $controls->addSubItem($timeline);
             }
+            
+            // show comment button
+            if($this->adminSettings->getValue("conf_show_controls_conf_show_comment"))
+            {
+            	$comment = new ilCheckboxInputGUI($this->txt("show_comment"), "show_comment");
+            	$comment->setInfo($this->txt("info_show_comment"));
+            	$controls->addSubItem($comment);
+            }
 
             $this->form->addItem($controls);
         }
@@ -394,6 +403,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         $values["show_heading"]= $this->object->getShowHeading();
         $values["show_import_export"]= $this->object->getShowImportExport();
         $values["show_timeline"]= $this->object->getShowTimeline();
+        $values["show_comment"]= $this->object->getShowComment();
         $values["read_only"]= $this->object->getReadOnly();
                
         if($this->object->getEagleEyeMail() == "owner")
@@ -437,6 +447,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             $this->object->setShowHeading($this->form->getInput("show_heading"));
             $this->object->setShowImportExport($this->form->getInput("show_import_export"));
             $this->object->setShowTimeline($this->form->getInput("show_timeline"));
+            $this->object->setShowComment($this->form->getInput("show_comment"));
             $this->object->setReadOnly($this->form->getInput("read_only"));
             
             if($this->form->getInput("xct_eagle_eye_mail") == "owner")
@@ -530,7 +541,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 //
 // revoke consent
 // !!! only for demonstration !!!
-//
+/*
      function revokeConsent()
      {
      global $lng, $ilCtrl;
@@ -545,7 +556,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         }
 		$ilCtrl->redirect($this, "showContent");
     }
-    
+*/
    
 //
 // eagle eye (request for help)
@@ -805,6 +816,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             $pad->setVariable("SHOW_HEADING_BLOCK",($this->object->getShowHeading()? "true" : "false"));
             $pad->setVariable("SHOW_IMPORT_EXPORT_BLOCK",($this->object->getShowImportExport()? "true" : "false"));
             $pad->setVariable("SHOW_TIMELINE_BLOCK",($this->object->getShowTimeline()? "true" : "false"));
+            $pad->setVariable("SHOW_COMMENT_BLOCK",($this->object->getShowComment()? "true" : "false"));
             $pad->setVariable("LANGUAGE",$lng->getUserLanguage());			
             $pad->setVariable("EPADL_VERSION",($this->adminSettings->getValue("epadl_version")));
             $tpl->setContent($pad->get());

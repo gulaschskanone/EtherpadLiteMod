@@ -499,5 +499,13 @@ foreach($sql as $s)
 		$ilDB->addPrimaryKey($table_name, array("pad_id", "quest_id"));
 		$ilDB->createSequence($table_name);
 	}
+?>
+
+<#18>
+<?php 
+if(!$ilDB->tableColumnExists('rep_robj_xct_data','show_comment'))
+{
+	$ilDB->addTableColumn("rep_robj_xct_data","show_comment",array("type"=>"boolean"));
+}
 
 ?>

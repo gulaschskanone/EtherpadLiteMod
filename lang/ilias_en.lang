@@ -77,6 +77,8 @@ show_import_export#:#Show Import/Export Controls
 info_show_import_export#:#Use with care: Import and Export may not work as expected. Text may also be moved with the ctrl+c/cmd+c command.
 show_timeline#:#Show Timeline
 info_show_timeline#:#With the timeline the chronological sequence of the Etherpad can be shown.
+show_comment#:#Show Comment Control
+info_show_comment#:#With this function comments can be created.
 enter_fullscreen#:#Activate Fullscreen
 leave_fullscreen#:#Deactivate Fullscreen
 
@@ -171,3 +173,8 @@ default_show_controls_default_show_timeline#:#Show timeline by default.
 info_default_show_timeline#:#Enable or disable timeline for all Etherpad objects by default.
 conf_show_controls_conf_show_timeline#:#Allow individual display of timeline
 info_conf_show_timeline#:#When activated it is possible to enable or disable the timeline for each individual Etherpad.
+
+default_show_controls_default_show_comment#:#Show comment function by default.
+info_default_show_comment#:#Enable or disable comments for all Etherpad objects by default (ep_comments_page).
+conf_show_controls_conf_show_comment#:#Allow individual display of comment button
+info_conf_show_comment#:#When activated it is possible to enable or disable the comment functions for each individual Etherpad (ep_comments_page).

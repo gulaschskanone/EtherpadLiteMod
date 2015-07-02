@@ -236,6 +236,7 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
             $this->setShowHeading($rec["show_heading"]);
             $this->setShowImportExport($rec["show_import_export"]);
             $this->setShowTimeline($rec["show_timeline"]);
+            $this->setShowComment($rec["show_comment"]);
             $this->setOldEtherpad($rec["old_pad"]);
             $this->setReadOnlyID($rec["read_only_id"]); 
             $this->setReadOnly($rec["read_only"]);
@@ -265,7 +266,8 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
                 " show_coloring = " . $ilDB->quote($this->GetShowColoring(), "integer"). "," .
                 " show_heading = " . $ilDB->quote($this->getShowHeading(), "integer"). "," .
                 " show_import_export = " . $ilDB->quote($this->getShowImportExport(), "integer"). "," .
-                " show_timeline = " . $ilDB->quote($this->getShowTimeline(), "integer"). "," . 
+                " show_timeline = " . $ilDB->quote($this->getShowTimeline(), "integer"). "," .
+        		" show_comment = " . $ilDB->quote($this->getShowComment(), "integer"). "," .
                 " read_only_id = " . $ilDB->quote($this->getReadOnlyID(), "text"). "," . 
                 " read_only = " . $ilDB->quote($this->getReadOnly(), "integer"). "," . 
         		" xct_av_questions = " . $ilDB->quote($this->getAvailableQuestions(), "integer").  "," .
@@ -747,6 +749,30 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
             return $this->adminSettings->getValue("default_show_controls_default_show_timeline");
         }
         return $this->showTimeline;
+    }
+    
+    /**
+     * Set Show comment
+     *
+     * @param  boolean  $a_val show_comment
+     */
+    public function setShowComment($a_val)
+    {
+    	$this->showComment = $a_val;
+    }
+    
+    /**
+     * Set show comment
+     *   
+     * @return boolean  show comment
+     */
+    public function getShowComment()
+    {
+    	if(!$this->adminSettings->getValue("conf_show_controls_conf_show_comment"))
+    	{
+    		return $this->adminSettings->getValue("default_show_controls_default_show_comment");
+    	}
+    	return $this->showComment;
     }
 
 	/**

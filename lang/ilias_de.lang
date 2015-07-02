@@ -90,6 +90,8 @@ show_import_export#:#Import- Exportelemente ein- oder ausblenden
 info_show_import_export#:#Achtung diese Funktionen kann zu unbeabsichtigten Ergebnissen führen. Falls das Importieren/Exportieren nicht wie gewünscht funktiert, kann der Inhalt des Klausurpads auch durch die Zwischenablage (ctrl+c/cmd+c) verschoben werden.
 show_timeline#:#Timeline ein- oder ausblenden
 info_show_timeline#:#Mit der Timeline kann der zeitliche Verlauf des Klausurpads analysiert werden.
+show_comment#:#Kommentarfunktion ein- oder ausblenden
+info_show_comment#:#Mit der Kommantarfunktion können Text-Passagen kommentiert werden.
 enter_fullscreen#:#Vollbildmodus aktivieren
 leave_fullscreen#:#Vollbildmodus deaktivieren
 
@@ -180,3 +182,8 @@ default_show_controls_default_show_timeline#:#Timeline ein- oder ausblenden.
 info_default_show_timeline#:#Timeline für alle Klausurpadelemente standardmässig ein- oder ausblenden.
 conf_show_controls_conf_show_timeline#:#Timeline individuell konfigurierbar.
 info_conf_show_timeline#:#Timeline kann für jedes einzelne Klausurpadobjekt ein- oder ausgeblendet werden.
+
+default_show_controls_default_show_comment#:#Kommentarfunktion ein- oder ausblenden.
+info_default_show_comment#:#Kommentarfunktion für alle Klausurpadelemente standardmässig ein- oder ausblenden (ep_comments_page).
+conf_show_controls_conf_show_comment#:#Kommentarfunktion individuell konfigurierbar.
+info_conf_show_comment#:#Kommentarfunktion kann für jedes einzelne Klausurpadobjekt ein- oder ausgeblendet werden (ep_comments_page).
