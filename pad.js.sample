@@ -138,6 +138,12 @@
 	   	// $("#settings .column table tr").eq(0).hide();
    });
    
+   // ep_comments_page support
+   if(parameters["showCommentBlock"] != "true")
+   {
+	   $(".addComment").hide();   
+   }
+   
 }
 
 function getUrlVars()
