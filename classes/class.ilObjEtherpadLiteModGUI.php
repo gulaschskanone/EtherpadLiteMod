@@ -65,7 +65,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         {
             case "editProperties": // list all commands that need write permission here
             case "updateProperties":
-            case "revokeConsent": // DEMO
                 $this->checkPermission("write");
                 $this->$cmd();
                 break;
@@ -734,6 +733,15 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             
             include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
             $this->EtherpadLiteUser = new ilEtherpadLiteModUser();
+            
+            // admins and tutors: voller name als nickname
+            global $ilAccess;
+            if ($ilAccess->checkAccess("write", "", $this->object->getRefId()) && !$this->EtherpadLiteUser->getPseudonym())
+            {
+            	$this->EtherpadLiteUser->setPseudonym($ilUser->getFullname());
+            	$this->EtherpadLiteUser->updateUser();
+            }
+            
             
             $missingPolicies = $this->EtherpadLiteUser->agreementsCompletely(array("PrivacyPolicy", "Rules", "IPropPolicy"), $this->object->getEtherpadLiteID());
             
