@@ -349,7 +349,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 
 
             // show import/export
-            if($this->adminSettings->getValue("conf_show_controls_conf_show_import_export"))
+            if($this->adminSettings->getValue("conf_show_controls_conf_show_imp_exp"))
             {
                 $import = new ilCheckboxInputGUI($this->txt("show_import_export"), "show_import_export");
                 $import->setInfo($this->txt("info_show_import_export"));

@@ -720,7 +720,7 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
      */
     public function getShowImportExport()
     {
-        if(!$this->adminSettings->getValue("conf_show_controls_conf_show_import_export"))
+        if(!$this->adminSettings->getValue("conf_show_controls_conf_show_imp_exp"))
         {
             return $this->adminSettings->getValue("default_show_controls_default_show_imp_exp");
         }
