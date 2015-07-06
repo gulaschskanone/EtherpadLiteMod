@@ -812,8 +812,10 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             // $pad->setVariable("USER_NAME",(!$this->adminSettings->getValue("author_identification_conf") ? rawurlencode($ilUser->getFullname()) : $this->constructAuthorIdentification($this->object->getAuthorIdentification())));
             $pad->setVariable("USER_NAME",rawurlencode(($this->EtherpadLiteUser->getPseudonym()) ? $this->EtherpadLiteUser->getPseudonym() :  $this->txt("unknown_identity")));
             
+            // $pad->setVariable("SHOW_CHAT",($this->object->getShowChat() ? "true" : "false"));
+            $pad->setVariable("SHOW_CHAT",($this->object->getShowChat() &&  !$this->object->getShowComment()? "true" : "false"));
+            
             $pad->setVariable("SHOW_CONTROLS",($this->object->getShowControls() ? "true" : "false"));
-            $pad->setVariable("SHOW_CHAT",($this->object->getShowChat() ? "true" : "false"));
             $pad->setVariable("SHOW_LINE_NUMBERS",($this->object->getLineNumbers() ? "true" : "false"));
             $pad->setVariable("USE_MONOSPACE_FONT",($this->object->getMonospaceFont()? "true" : "false"));
             $pad->setVariable("NO_COLORS",($this->object->getShowColors()? "false" : "true"));
