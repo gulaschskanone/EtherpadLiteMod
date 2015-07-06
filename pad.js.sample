@@ -54,7 +54,8 @@
 	var span = $('<span />', {'id': 'myusernameedit'}).css({'display' : 'block'});
 	$("#myusernameedit").parent().append($(span).html(decodeURIComponent(parameters["userName"])));
 	$("#myusernameedit").remove();
-
+ 	$("#myusernameedit").css('cursor', 'default');
+ 	$("#otherusers").css('cursor', 'default');
 
 
 

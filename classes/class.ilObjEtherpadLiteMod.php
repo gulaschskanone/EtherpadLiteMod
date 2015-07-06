@@ -78,7 +78,13 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
 			{
             	$this->setEtherpadLiteGroupMapper($this->getEtherpadLiteConnection()->createGroupIfNotExistsFor($this->getId()));
             }
-            $this->setEtherpadLiteUserMapper($this->getEtherpadLiteConnection()->createAuthorIfNotExistsFor($ilUser->id, $ilUser->firstname . ' ' . $ilUser->lastname));
+            
+            // prefer nickname
+            include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
+            $this->EtherpadLiteUser = new ilEtherpadLiteModUser();
+            $name = ($this->EtherpadLiteUser->getPseudonym()) ? $this->EtherpadLiteUser->getPseudonym() :  $this->txt("unknown_identity");
+            
+            $this->setEtherpadLiteUserMapper($this->getEtherpadLiteConnection()->createAuthorIfNotExistsFor($ilUser->id, rawurldecode($name))); // $ilUser->firstname . ' ' . $ilUser->lastname
         }
         catch (Exception $e)
         {
