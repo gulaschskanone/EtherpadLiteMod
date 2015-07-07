@@ -1,5 +1,5 @@
 # Etherpad Lite Plugin for ILIAS - University of Passau MOD
-This plugin is based on jrocho/ILIAS-Etherpad-Lite-Plugin v1.1.2
+This plugin based on jrocho/ILIAS-Etherpad-Lite-Plugin v1.1.2
 
 
 
@@ -25,4 +25,8 @@ Copy the files *pad.[js|css].sample* to *node_modules/ep_etherpad-lite/static/cu
 `npm install ep_comments_page ep_table_of_contents ep_page_view ep_spellcheck`
 
 ### Activate Plugin in ILIAS ###
-*Administration >> Plugins*
+... on *Administration >> Plugins*. 
+Set global permissions
+* Course Member: *Visible* and *Read*
+* Course Tutor: additional *Edit*
+* Group Administrator: all permisions
