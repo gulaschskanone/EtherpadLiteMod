@@ -1,0 +1,13 @@
+/*
+  custom css files are loaded after core css files. Simply use the same selector to override a style.
+  Example:
+      #editbar LI {border:1px solid #000;}
+    overrides
+      #editbar LI {border:1px solid #d5d5d5;}
+    from pad.css
+*/
+
+/* TOC - reset numbering */ 
+.toch1:before, .toch2:before, .toch3:before, .toch4:before, .toch5:before, .toch6:before {
+	content: none !important;
+}
