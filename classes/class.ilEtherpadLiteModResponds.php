@@ -1,12 +1,12 @@
 <?php
 
 /**
- * EtherpadLite Quests class
+ * EtherpadLite Responds class
  * @author  Christoph Becker <christoph.becker@uni-passau.de>
  * @version $Id$
  *
  */
-class ilEtherpadLiteModQuests
+class ilEtherpadLiteModResponds
 {
 	public function  __construct() 
 	{
@@ -17,24 +17,21 @@ class ilEtherpadLiteModQuests
 	/**
 	 * add quest
 	 */
-	function addQuest()
+	function addRespond()
 	{
 		global $ilDB;
-		 
-		$quest_id = $ilDB->nextID('rep_robj_xct_quests');
-		
-		return $ilDB->manipulate("INSERT INTO rep_robj_xct_quests (pad_id, quest_id, author, quest) VALUES (" .
-				$ilDB->quote($this->getPadId(), "text") . "," .
-				$ilDB->quote($quest_id, "integer") . "," .
+		 	
+		return $ilDB->manipulate("INSERT INTO rep_robj_xct_responds (quest_id, author, respond) VALUES (" .
+				$ilDB->quote($this->getQuestId(), "integer") . "," .
 				$ilDB->quote($this->getAuthor(), "text") . "," .
-				$ilDB->quote($this->getQuest(), "text") .
-				")");
+				$ilDB->quote($this->getRespond(), "text") .
+			")");
 	}
 	
 	
 	/**
 	 * count quests
-	 */
+	 
 	function numberOfQuests()
 	{
 		global $ilDB;
@@ -42,23 +39,19 @@ class ilEtherpadLiteModQuests
 		
 		return $result->numRows();
 	}
+	*/
 	
 	/**
 	 * get quests
 	 */
-	function getQuests()
+	function getRespondRow()
 	{
 		global $ilDB;
-		$result = $ilDB->query("SELECT author, quest, created_at, quest_id FROM rep_robj_xct_quests WHERE pad_id = " . $ilDB->quote($this->getPadId(), "text"));
-		$rows = array();
+		$result = $ilDB->query("SELECT author, respond, created_at FROM rep_robj_xct_responds WHERE quest_id = " . $ilDB->quote($this->getQuestId(), "integer"));
 		
-		while ($rec = $ilDB->fetchAssoc($result))
-		{
-			$rows[] = $rec;
-		}
-		return $rows;
+		return $ilDB->fetchAssoc($result);
 	}
-	
+
 
     
     /** 
@@ -66,43 +59,43 @@ class ilEtherpadLiteModQuests
      */
        
     /**
-     * Set pad id
+     * Set quest id
+     *
+     * @param    int
+     */
+    public function setQuestId($a_val)
+    {
+    	$this->quest_id = $a_val;
+    }
+    
+    /**
+     * Get quest id
+     *
+     * @return    int
+     */
+    public function getQuestId()
+    {
+    	return $this->quest_id;
+    }
+    
+    /**
+     * Set respond
      *
      * @param    string
      */
-    public function setPadId($a_val)
+    public function setRespond($a_val)
     {
-    	$this->pad_id = $a_val;
+    	$this->respond = $a_val;
     }
     
     /**
-     * Get pad id
+     * Get respond
      *
      * @return    string
      */
-    public function getPadId()
+    public function getRespond()
     {
-    	return $this->pad_id;
-    }
-    
-    /**
-     * Set quest
-     *
-     * @param    string
-     */
-    public function setQuest($a_val)
-    {
-    	$this->quest = $a_val;
-    }
-    
-    /**
-     * Get quest
-     *
-     * @return    string
-     */
-    public function getQuest()
-    {
-    	return $this->quest;
+    	return $this->respond;
     }
     
     /**

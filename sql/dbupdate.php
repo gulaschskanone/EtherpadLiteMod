@@ -6,7 +6,7 @@ $fields = array(
 		'length' => 4,
 		'notnull' => true
 	),
-        'is_online' => array(
+    'is_online' => array(
 		'type' => 'integer',
 		'length' => 4,
 		'notnull' => false
@@ -64,15 +64,15 @@ if($ilDB->tableColumnExists("rep_robj_xct_data", "use_color"))
 <#4>
 <?php
     $fields = array(
-    'epkey' => array(
-    'type' => 'text',
-    'length' => 128,
-    'notnull' => true
-    ),
-    'epvalue' => array(
-        'type' => 'clob',
-        'notnull' => false
-    ),
+    	'epkey' => array(
+    		'type' => 'text',
+    		'length' => 128,
+    		'notnull' => true
+    	),
+    	'epvalue' => array(
+        	'type' => 'clob',
+        	'notnull' => false
+    	),
     );
 
     $ilDB->createTable("rep_robj_xct_adm_set", $fields);
@@ -503,9 +503,47 @@ foreach($sql as $s)
 
 <#18>
 <?php 
-if(!$ilDB->tableColumnExists('rep_robj_xct_data','show_comment'))
-{
-	$ilDB->addTableColumn("rep_robj_xct_data","show_comment",array("type"=>"boolean"));
-}
+	if(!$ilDB->tableColumnExists('rep_robj_xct_data','show_comment'))
+	{
+		$ilDB->addTableColumn("rep_robj_xct_data","show_comment",array("type"=>"boolean"));
+	}
+?>
+
+<#19>
+<?php 
+	$res = $ilDB->query("ALTER TABLE `rep_robj_xct_quests` CHANGE `username` `author` VARCHAR(128);");
+	
+	/*
+	CREATE TABLE IF NOT EXISTS `ilias`.`rep_robj_xct_responds` ()
+	*/
+	$table_name = 'rep_robj_xct_responds';
+	$table_fields = array(
+			'quest_id' => array(
+					'type' => 'integer',
+					'length' => 4,
+					'notnull' => true
+			),
+			'author' => array(
+					'type' => 'text',
+					'length' => 128,
+					'notnull' => true
+			),
+			'respond' => array(
+					'type' => 'text',
+					'length' => 500,
+					'notnull' => true
+			),
+			'created_at' => array(
+					'type' => 'timestamp',
+					'default' => 'CURRENT_TIMESTAMP',
+					'notnull' => true
+			)
+	);
+	
+	if(!$ilDB->tableExists($table_name))
+	{
+		$ilDB->createTable($table_name, $table_fields);
+		$ilDB->addPrimaryKey($table_name, array("quest_id"));
+	}
 
 ?>

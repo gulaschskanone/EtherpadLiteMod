@@ -65,6 +65,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         {
             case "editProperties": // list all commands that need write permission here
             case "updateProperties":
+            case "saveResponse":
                 $this->checkPermission("write");
                 $this->$cmd();
                 break;
@@ -566,7 +567,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	function requestForHelp()
 	{
 		
-		global $tpl, $ilTabs, $ilCtrl, $ilUtil;
+		global $tpl, $ilTabs, $ilCtrl, $ilUtil, $ilAccess, $lng;
 		$questquota = $this->object->getAvailableQuestions();
 		$ilTabs->activateTab("requestForHelp");
 		
@@ -588,12 +589,12 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 			include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
 			$this->adminSettings = new ilEtherpadLiteModConfig();
 			
-			$this->EtherpadLiteQuests->setUsername($this->EtherpadLiteUser->getPseudonym());
+			$this->EtherpadLiteQuests->setAuthor($this->EtherpadLiteUser->getPseudonym());
 			$this->EtherpadLiteQuests->setQuest(ilUtil::stripSlashes($_POST["quest-input"]));
 			
 			if($this->EtherpadLiteQuests->addQuest())
 			{ 
-				// to do: send mail to DOZENT
+				// send mail to DOZENT
 				$mail_to = ($this->object->getEagleEyeMail() == "owner") ? ilObjUser::_lookupEmail($this->object->getOwner()) : $this->object->getEagleEyeMail();
 				$subject = "compliant teamwork | Neue Frage";
 				
@@ -636,10 +637,47 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 			foreach ($this->EtherpadLiteQuests->getQuests() as $row)
 			{
 				$panel = ilPanelGUI::getInstance();
-				$panel->setHeading($row["username"]." schrieb am ". $row["created_at"]);
+				$panel->setHeading("<i>".$row["author"]."</i> schrieb am ". date("d.m.Y, H:i",strtotime($row["created_at"])));
 				$panel->setBody($row["quest"]);
 				$panel->setHeadingStyle(ilPanelGUI::HEADING_STYLE_SUBHEADING);
 				$list .= $panel->getHTML();
+				
+				
+				include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModResponds.php");
+				$this->EtherpadLiteRespond = new ilEtherpadLiteModResponds();
+				$this->EtherpadLiteRespond->setQuestId($row["quest_id"]);
+				
+				if($row = $this->EtherpadLiteRespond->getRespondRow())
+				{
+					$panel = ilPanelGUI::getInstance();
+					$panel->setHeading("<i>".$row["author"]."</i> antwortete am ". date("d.m.Y, H:i",strtotime($row["created_at"])));
+					$panel->setBody($row["respond"]);
+					$panel->setHeadingStyle(ilPanelGUI::HEADING_STYLE_BLOCK);
+					$list .= $panel->getHTML();
+				}
+				elseif($ilAccess->checkAccess("write", "", $this->object->getRefId()))
+				{
+					include_once("./Services/Form/classes/class.ilPropertyFormGUI.php");
+					$form = new ilPropertyFormGUI();
+					$form->setFormAction($ilCtrl->getFormAction($this));
+					// $form->setTitle("<br/>");
+					                
+					// text input
+					$text_prop = new ilTextAreaInputGUI("Antwort", "response");
+					$text_prop->setInfo("Max. 500 Zeichen. Ihre Antwort lässt sich nicht bearbeiten oder löschen.");
+					$text_prop->setRequired(true);
+					$form->addItem($text_prop);
+					
+					// hidden
+					$hidden = new ilHiddenInputGui("quest_id");
+					$hidden->setValue($this->EtherpadLiteRespond->getQuestId());
+					$form->addItem($hidden);
+					
+					$form->addCommandButton("saveResponse", $lng->txt("save"));
+
+					$list .= $form->getHTML();
+
+				}
 			}
 		}
 			
@@ -648,7 +686,43 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	}
 // --------------------------------------------------------------------------------------	
 	
-
+//
+// save respond
+//
+	function saveResponse(){
+		global $lng, $ilCtrl;
+		 
+		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModResponds.php");
+		$this->EtherpadLiteModRespond = new ilEtherpadLiteModResponds();
+		
+		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
+		$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
+				 
+		if($_POST["response"])
+		{
+			if($this->EtherpadLiteModRespond->setRespond(ilUtil::stripSlashes($_POST["response"])))
+			{
+				ilUtil::sendFailure("error on setRespond()", true);
+			}
+			elseif($this->EtherpadLiteModRespond->setAuthor($this->EtherpadLiteUser->getPseudonym()))
+			{
+				ilUtil::sendFailure("error on setAuthor()", true);
+			}
+			elseif($this->EtherpadLiteModRespond->setQuestId($_POST["quest_id"]))
+			{
+				ilUtil::sendFailure("error on setQuestId()", true);
+			}
+			elseif(!$this->EtherpadLiteModRespond->addRespond())
+			{
+				ilUtil::sendFailure("error on updateUser()", true);
+			}
+		}
+		
+		ilUtil::sendSuccess("Antwort gesendet!", true);
+		$ilCtrl->redirect($this, "requestForHelp");
+	}
+	
+	
 //
 //	show profile
 //
