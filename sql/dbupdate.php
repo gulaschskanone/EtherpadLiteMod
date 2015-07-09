@@ -514,9 +514,9 @@ foreach($sql as $s)
 	$res = $ilDB->query("ALTER TABLE `rep_robj_xct_quests` CHANGE `username` `author` VARCHAR(128);");
 	
 	/*
-	CREATE TABLE IF NOT EXISTS `ilias`.`rep_robj_xct_responds` ()
+	CREATE TABLE IF NOT EXISTS `ilias`.`rep_robj_xct_responses` ()
 	*/
-	$table_name = 'rep_robj_xct_responds';
+	$table_name = 'rep_robj_xct_responses';
 	$table_fields = array(
 			'quest_id' => array(
 					'type' => 'integer',
@@ -528,7 +528,7 @@ foreach($sql as $s)
 					'length' => 128,
 					'notnull' => true
 			),
-			'respond' => array(
+			'response' => array(
 					'type' => 'text',
 					'length' => 500,
 					'notnull' => true
@@ -546,4 +546,18 @@ foreach($sql as $s)
 		$ilDB->addPrimaryKey($table_name, array("quest_id"));
 	}
 
+?>
+
+<#20>
+<?php 
+	$table = "rep_robj_xct_data";
+	$field = "xct_task";
+	if(!$ilDB->tableColumnExists($table,$field))
+	{
+		$ilDB->addTableColumn($table, $field, array(
+				'type' => 'blob',
+				'notnull' => false
+			)
+		);
+	}
 ?>

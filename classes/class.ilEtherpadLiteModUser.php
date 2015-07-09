@@ -71,7 +71,6 @@ class ilEtherpadLiteModUser
 	 */
 	public function agreePolicy($type, $hash, $PadId = "error", $attribution = 0)
 	{
-
 		
 		if($type == "IPropPolicy")
 		{

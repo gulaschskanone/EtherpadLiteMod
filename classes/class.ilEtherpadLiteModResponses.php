@@ -1,12 +1,12 @@
 <?php
 
 /**
- * EtherpadLite Responds class
+ * EtherpadLite Responses class
  * @author  Christoph Becker <christoph.becker@uni-passau.de>
  * @version $Id$
  *
  */
-class ilEtherpadLiteModResponds
+class ilEtherpadLiteModResponses
 {
 	public function  __construct() 
 	{
@@ -17,14 +17,14 @@ class ilEtherpadLiteModResponds
 	/**
 	 * add quest
 	 */
-	function addRespond()
+	function addResponse()
 	{
 		global $ilDB;
 		 	
-		return $ilDB->manipulate("INSERT INTO rep_robj_xct_responds (quest_id, author, respond) VALUES (" .
+		return $ilDB->manipulate("INSERT INTO rep_robj_xct_responses (quest_id, author, response) VALUES (" .
 				$ilDB->quote($this->getQuestId(), "integer") . "," .
 				$ilDB->quote($this->getAuthor(), "text") . "," .
-				$ilDB->quote($this->getRespond(), "text") .
+				$ilDB->quote($this->getResponse(), "text") .
 			")");
 	}
 	
@@ -44,10 +44,10 @@ class ilEtherpadLiteModResponds
 	/**
 	 * get quests
 	 */
-	function getRespondRow()
+	function getResponseRow()
 	{
 		global $ilDB;
-		$result = $ilDB->query("SELECT author, respond, created_at FROM rep_robj_xct_responds WHERE quest_id = " . $ilDB->quote($this->getQuestId(), "integer"));
+		$result = $ilDB->query("SELECT author, response, created_at FROM rep_robj_xct_responses WHERE quest_id = " . $ilDB->quote($this->getQuestId(), "integer"));
 		
 		return $ilDB->fetchAssoc($result);
 	}
@@ -79,23 +79,23 @@ class ilEtherpadLiteModResponds
     }
     
     /**
-     * Set respond
+     * Set response
      *
      * @param    string
      */
-    public function setRespond($a_val)
+    public function setResponse($a_val)
     {
-    	$this->respond = $a_val;
+    	$this->response = $a_val;
     }
     
     /**
-     * Get respond
+     * Get response
      *
      * @return    string
      */
-    public function getRespond()
+    public function getResponse()
     {
-    	return $this->respond;
+    	return $this->response;
     }
     
     /**

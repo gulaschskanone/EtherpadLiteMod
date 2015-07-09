@@ -1,54 +1,21 @@
-
-<div class="form-horizontal">
-	<div class="ilFormHeader"><h3 class="ilHeader"><a name="il_form_top"></a>Nutzerprofileinstellungen Bearbeiten</h3>
-		<div class="ilHeaderDesc"></div>
-		
-		<!--  -->
-		<div class="form-group" id="il_prop_cont_title">
-			<label for="title" class="col-sm-3 control-label">Nutzerpseudonym <span class="asterisk">*</span></label>
-			<div class="col-sm-9">
-				<form id="nameform" method="POST" action="{NAMEFORMLINK}">
-					<input required type="text" name="nameform-input" maxlength="128" placeholder="Pseudonym" value="{VALUE}"/><br/>
-					<br/><input class="btn btn-default btn-sm" type="SUBMIT" id="nameform-submit" value="Speichern">
-				</form><br/>
-			</div>
-		</div>
-		
-		<!--  policy agreement -->
-		<script type="text/javascript">	
-		$(document).ready(function(){
-		    // dialog opener
-			$( "#PrivacyPolicyMODAL_trigger" ).click(function() {
-				$('#ilPrivacyPolicyMODAL').modal('show');
-		    });
-			$( "#IPropPolicyMODAL_trigger" ).click(function() {
-				$('#ilIPropPolicyMODAL').modal('show');
-		    });
-			$( "#RulesMODAL_trigger" ).click(function() {
-				$('#ilRulesMODAL').modal('show');
-		    });
-		});
-		</script>
-		{PrivacyPolicyMODAL}
-		{IPropPolicyMODAL}
-		{RulesMODAL}
-		<div class="form-group" id="il_prop_cont_title">
-			<label class="col-sm-3 control-label">Einsicht in abgegebe Erklärungen</label>
-			<div class="col-sm-9">
-				<div style="display:{PrivacyPolicyDISPLAY};">
-					<img src="templates/default/images/checkbox_checked.png"/>&nbsp;&nbsp;<a id="PrivacyPolicyMODAL_trigger">Datenschutzerklärung </a> <br/><small>({PrivacyPolicyDATETIME})</small><br/><br/>
-				</div>
-				<div style="display:{IPropPolicyDISPLAY};">
-					<img src="templates/default/images/checkbox_checked.png"/>&nbsp;&nbsp;<a id="IPropPolicyMODAL_trigger">Urheberrechtserklärung </a> <br/>
-					<small>({IPropPolicyDATETIME})</small><br/>
-					<small>{ATTRIBUTION}</small><br/><br/>
-				</div>
-				<div style="display:{RulesDISPLAY};">
-					<img src="templates/default/images/checkbox_checked.png"/>&nbsp;&nbsp;<a id="RulesMODAL_trigger">Nutzungsbedingungen</a> <br/><small>({RulesDATETIME})</small><br/><br/>
-				</div>
-			</div>
-		</div>
-		<!-- / policy agreement -->
-	</div>
-</div>
+<!-- BEGIN user_properties_block -->
+	<script type="text/javascript">	
+	$(document).ready(function(){
+	    // dialog opener
+		$( "#PrivacyPolicyMODAL_trigger" ).click(function() {
+			$('#ilPrivacyPolicyMODAL').modal('show');
+	    });
+		$( "#IPropPolicyMODAL_trigger" ).click(function() {
+			$('#ilIPropPolicyMODAL').modal('show');
+	    });
+		$( "#RulesMODAL_trigger" ).click(function() {
+			$('#ilRulesMODAL').modal('show');
+	    });
+	});
+	</script>
+	{PrivacyPolicyMODAL}
+	{IPropPolicyMODAL}
+	{RulesMODAL}
 	
+	{USER_PROPERTIES_FORM}
+<!-- END user_properties_block -->

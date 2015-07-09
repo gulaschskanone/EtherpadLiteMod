@@ -248,6 +248,7 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
             $this->setReadOnly($rec["read_only"]);
            	$this->setEagleEyeMail($rec["xct_eagle_eye_mail"]);
            	$this->setAvailableQuestions($rec["xct_av_questions"]);
+           	$this->setTask($rec["xct_task"]);
         }
     }
 	
@@ -277,6 +278,7 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
                 " read_only_id = " . $ilDB->quote($this->getReadOnlyID(), "text"). "," . 
                 " read_only = " . $ilDB->quote($this->getReadOnly(), "integer"). "," . 
         		" xct_av_questions = " . $ilDB->quote($this->getAvailableQuestions(), "integer").  "," .
+        		" xct_task = " . $ilDB->quote($this->getTask(), "text").  "," .
         		" xct_eagle_eye_mail = " . $ilDB->quote($this->getEagleEyeMail(), "text").
                 " WHERE id = " . $ilDB->quote($this->getId(), "integer")
         );
@@ -380,6 +382,25 @@ class ilObjEtherpadLiteMod extends ilObjectPlugin
     	return $this->xct_eagle_eye_mail;
     } 
     
+    /**
+     * Set task
+     *
+     * @param   string 			task
+     */
+    public function setTask($a_val)
+    {
+    	$this->xct_task = $a_val;
+    }
+    
+    /**
+     * Get task
+     *
+     * @return    string 			task
+     */
+    public function getTask()
+    {
+    	return $this->xct_task;
+    }
      
     
     /**
