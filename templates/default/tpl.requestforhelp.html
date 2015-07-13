@@ -3,11 +3,20 @@
 <p>Sie können als Team <b>{QUESTQUOTA}</b> Fragen zum Lösen der Klausur direkt an den Dozenten / die Dozentin richten (max. 500 Zeichen). Ihre Frage lässt sich nicht bearbeiten oder löschen.</p>
 <p>Um doppelte Fragestellungen zu vermeiden, werden die Fragen hier allen Teammitgliedern aufgelistet.</p>
 
-<div style="display:{FORMDIV};">
-	<form id="quest-form" method="POST" action="{QUESTLINK}">
-		<!-- <label for="quest-input"></label><br/> -->
-		<textarea autofocus maxlength="500" cols="50" rows="4" required placeholder="Frage ..." name="quest-input" id="quest-input"></textarea>
+<!-- BEGIN request_for_help_block -->
+	<script type="text/javascript">	
+	$(document).ready(function(){
+	    // placeholder
+	    $("#request").attr("placeholder", "Frage...");
+	    $("#request").focus();
+	    $("#request").attr("maxlength","500");
+	});
+	</script>
+	{REQUEST_FOR_HELP_FORM}
+<!-- END request_for_help_block -->
 
-		<p><input class="btn btn-default btn-sm" type="SUBMIT" id="quest-submit" name="quest-submit" value="Frage speichern und absenden"></p>
-	</form>
-</div>
+<!-- // list -->
+<!-- BEGIN single_requests_block -->
+	{SINGLE_REQUESTS}
+	{SINGLE_RESPONSE}
+<!-- END single_requests_block -->

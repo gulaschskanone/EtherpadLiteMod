@@ -59,7 +59,6 @@ class ilEtherpadLiteModQuests
 		return $rows;
 	}
 	
-
     
     /** 
      * class setter and getter
@@ -86,6 +85,17 @@ class ilEtherpadLiteModQuests
     }
     
     /**
+     * Set created at
+     *
+     * @param    string
+     */
+    public function setCreatedAt($a_val)
+    {
+    	$this->created_at = $a_val;
+    }
+    
+    
+    /**
      * Set quest
      *
      * @param    string
@@ -93,7 +103,8 @@ class ilEtherpadLiteModQuests
     public function setQuest($a_val)
     {
     	$this->quest = $a_val;
-    }
+    } 
+    
     
     /**
      * Get quest

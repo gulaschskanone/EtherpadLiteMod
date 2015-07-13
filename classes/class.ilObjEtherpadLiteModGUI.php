@@ -74,6 +74,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             case "agreePolicy":
             case "requestForHelp":
             case "userPropertiesFormSave":
+            case "requestForHelpFormSave":
             case "showProfile":
                 $this->checkPermission("read");
                 $this->$cmd();
@@ -546,25 +547,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 
     }
 
-//
-// revoke consent
-// !!! only for demonstration !!!
-/*
-     function revokeConsent()
-     {
-     global $lng, $ilCtrl;
-       
-     	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
-    	$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
-        	 
-        if($this->EtherpadLiteUser->revokeConsent())	{
-        	// ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
-        } else {
-        	ilUtil::sendFailure("error", true);
-        }
-		$ilCtrl->redirect($this, "showContent");
-    }
-*/
+
    
 //
 // eagle eye (request for help)
@@ -579,68 +562,25 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		$questquota = $this->object->getAvailableQuestions();
 		$ilTabs->activateTab("requestForHelp");
 		
+		$customTpl = new ilTemplate("tpl.requestforhelp.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
+		$customTpl->setVariable("QUESTQUOTA", $questquota);
+		
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModQuests.php");
 		$this->EtherpadLiteQuests = new ilEtherpadLiteModQuests();
 		$this->EtherpadLiteQuests->setPadId($this->object->getEtherpadLiteID());
 		
-		
-		$customTpl = new ilTemplate("tpl.requestforhelp.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
-		$customTpl->setVariable("QUESTQUOTA", $questquota);
-		$customTpl->setVariable("QUESTLINK",$ilCtrl->getLinkTarget($this, "requestForHelp"));
-		
-		// save to DB, if POST and quota not achieved
-		if(isset($_POST["quest-submit"]) && $this->EtherpadLiteQuests->numberOfQuests() < $questquota)
-		{
-			include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
-    		$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
-
-			include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
-			$this->adminSettings = new ilEtherpadLiteModConfig();
-			
-			$this->EtherpadLiteQuests->setAuthor($this->EtherpadLiteUser->getPseudonym());
-			$this->EtherpadLiteQuests->setQuest(ilUtil::stripSlashes($_POST["quest-input"]));
-			
-			if($this->EtherpadLiteQuests->addQuest())
-			{ 
-				// send mail to DOZENT
-				$mail_to = ($this->object->getEagleEyeMail() == "owner") ? ilObjUser::_lookupEmail($this->object->getOwner()) : $this->object->getEagleEyeMail();
-				$subject = "compliant teamwork | Neue Frage";
-				
-				$headers = "From: noreply@ct.uni-passau.de\r\n";
-				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-				
-				$mailTpl = new ilTemplate("tpl.requestforhelpMail.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
-				
-				// require_once("Services/Init/classes/class.ilInitialisation.php");
-				// ilInitialisation::initILIAS();
-				$mailTpl->setVariable("LINK", ILIAS_HTTP_PATH ."/". $ilCtrl->getLinkTarget($this, "requestForHelp"));
-				
-				if(mail($mail_to, $subject, $mailTpl->get(), $headers))
-				{
-					ilUtil::sendSuccess("Frage gesendet!", true);
-				}
-				else 
-				{
-					ilUtil::sendError("E-Mail konnte nicht gesendet werden!", true);
-				}
-			}
-		}
-		
 		// hide form, if quota achieved
 		if($this->EtherpadLiteQuests->numberOfQuests() < $questquota)
 		{
-			$customTpl->setVariable("FORMDIV", "block");
+			$customTpl->setCurrentBlock("request_for_help_block");
+			$customTpl->setVariable("REQUEST_FOR_HELP_FORM", $this->requestForHelpForm());
+			$customTpl->parseCurrentBlock();
 		}
-		else
-		{
-			$customTpl->setVariable("FORMDIV", "none");
-		}
+
 		
 		// list all quests
-		$list = "";
 		if($this->EtherpadLiteQuests->numberOfQuests() > 0)
-		{		
+		{	
 			include_once("./Services/UIComponent/Panel/classes/class.ilPanelGUI.php");
 			foreach ($this->EtherpadLiteQuests->getQuests() as $row)
 			{
@@ -648,34 +588,37 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 				$panel->setHeading("<i>".$row["author"]."</i> schrieb am ". date("d.m.Y, H:i",strtotime($row["created_at"])));
 				$panel->setBody($row["quest"]);
 				$panel->setHeadingStyle(ilPanelGUI::HEADING_STYLE_SUBHEADING);
-				$list .= $panel->getHTML();
-				
+
+				$customTpl->setCurrentBlock("single_requests_block");
+				$customTpl->setVariable("SINGLE_REQUESTS", $panel->getHTML());
 				
 				include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModResponses.php");
 				$this->EtherpadLiteResponse = new ilEtherpadLiteModResponses();
 				$this->EtherpadLiteResponse->setQuestId($row["quest_id"]);
-				
+							
 				if($row = $this->EtherpadLiteResponse->getResponseRow())
 				{
 					$panel = ilPanelGUI::getInstance();
 					$panel->setHeading("<i>".$row["author"]."</i> antwortete am ". date("d.m.Y, H:i",strtotime($row["created_at"])));
 					$panel->setBody($row["response"]);
 					$panel->setHeadingStyle(ilPanelGUI::HEADING_STYLE_BLOCK);
-					$list .= $panel->getHTML();
+					
+					$customTpl->setVariable("SINGLE_RESPONSE", $panel->getHTML());
 				}
 				elseif($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 				{
 					include_once("./Services/Form/classes/class.ilPropertyFormGUI.php");
 					$form = new ilPropertyFormGUI();
 					$form->setFormAction($ilCtrl->getFormAction($this));
-					// $form->setTitle("<br/>");
+					$form->setTitle(" ");
 					                
-					// text input
-					$text_prop = new ilTextAreaInputGUI("Antwort", "response");
+					// textarea input
+					$text_prop = new ilTextAreaInputGUI("Ihre Antwort", "response");
 					$text_prop->setInfo("Max. 500 Zeichen. Ihre Antwort lässt sich nicht bearbeiten oder löschen.");
 					$text_prop->setRequired(true);
 					// $text_prop->setUseRte(true);
 					// $text_prop->setRteTagSet('mini');
+					$text_prop->setRows(5);
 					$form->addItem($text_prop);
 					
 					// hidden
@@ -685,13 +628,14 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 					
 					$form->addCommandButton("saveResponse", $lng->txt("save"));
 
-					$list .= $form->getHTML();
+					$customTpl->setVariable("SINGLE_RESPONSE", $form->getHTML());
 
 				}
+				$customTpl->parseCurrentBlock();
 			}
 		}
 			
-		$tpl->setContent($customTpl->get().$list);
+		$tpl->setContent($customTpl->get());
 		
 	}
 // --------------------------------------------------------------------------------------	
@@ -957,52 +901,99 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     			)
     	);
     }
+        
     
-    
-	/*
-    private function constructAuthorIdentification($type)
+    /**
+     * request for help FORM
+     */
+    public function requestForHelpForm()
     {
-    	global $ilUser;
-    	switch (true)
-    	{
-    		case stripos($type,'UDF') !== false:
-    			$field_id = substr($type, strpos($type, ":")+1);
-    			return $this->getUDFValue($field_id) ? rawurlencode($this->getUDFValue($field_id)) : $this->txt("unknown_identity"); break;			
-    		case $type === 'username':
-    			return rawurlencode($ilUser->getPublicName()); break;
-    		case $type === 'fullname':
-    		default:
-    			return rawurlencode($ilUser->getFullname());
-    	}
-    }    
-    
-    
-    private function getUDFValue($field_id)
-    {
-    	global $ilUser;
-    	$user_defined_data = $ilUser->getUserDefinedData();
-    	return $user_defined_data['f_'.$field_id] ? $user_defined_data['f_'.$field_id] : false;
+    	$this->initRequestForHelpForm();
+    	return $this->request_for_help_form_gui->getHtml();
     }
-    */
     
-
-  /*
-    public function initCreateForm($a_new_type)
+    /**
+     * FORM: Init request for help form.
+     */
+    public function initRequestForHelpForm()
     {
-    	$form = parent::initCreateForm($a_new_type);
-
-    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
-    	$this->adminSettings = new ilEtherpadLiteModConfig();
-    	if($this->adminSettings->getValue("author_identification_conf")) 
-    	{
-    		$av = new ilCustomInputGUI("", "");
-    		$av->setHtml($this->txt("info_author_identification") . " " . $this->txt("info_author_identification_selectable"));
-    		$form->addItem($av);
-    	}
-
-    	return $form;
+    	global $lng, $ilCtrl;
+    
+    	include_once("./Services/Form/classes/class.ilPropertyFormGUI.php");
+    	$this->request_for_help_form_gui = new ilPropertyFormGUI();
+		$this->request_for_help_form_gui->setTitle(" ");
+    
+    	$text_prop = new ilTextAreaInputGUI("Formulieren Sie Ihre Frage:", "request");
+		$text_prop->setInfo("Max. 500 Zeichen. Ihre Antwort lässt sich nicht bearbeiten oder löschen.");
+		$text_prop->setRequired(true);
+		// $text_prop->setUseRte(true);
+		// $text_prop->setRteTagSet('mini');
+		$text_prop->setRows(5);
+		$this->request_for_help_form_gui->addItem($text_prop);
+    	
+    	$this->request_for_help_form_gui->addCommandButton("requestForHelpFormSave", "Frage speichern und absenden");
+    	$this->request_for_help_form_gui->setFormAction($ilCtrl->getFormAction($this));
     }
-   */
+    
+    /**
+     * FORM: Save request for help form.
+     *
+     */
+    public function requestForHelpFormSave()
+    {
+    	global $lng, $ilCtrl;
+    	$this->initRequestForHelpForm();
+    	if ($this->request_for_help_form_gui->checkInput())
+    	{
+			include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
+	    	$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
+	
+    		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModQuests.php");
+			$this->EtherpadLiteQuests = new ilEtherpadLiteModQuests();
+			$this->EtherpadLiteQuests->setPadId($this->object->getEtherpadLiteID());
+					
+			$this->EtherpadLiteQuests->setAuthor($this->EtherpadLiteUser->getPseudonym());
+			$this->EtherpadLiteQuests->setQuest(ilUtil::stripSlashes($this->request_for_help_form_gui->getInput("request")));
+				
+			if($this->EtherpadLiteQuests->addQuest())
+			{ 
+				// send mail to DOZENT
+				$mail_to = ($this->object->getEagleEyeMail() == "owner") ? ilObjUser::_lookupEmail($this->object->getOwner()) : $this->object->getEagleEyeMail();
+				$subject = "compliant teamwork | Neue Frage";
+				
+				$headers = "From: noreply@ct.uni-passau.de\r\n";
+				$headers .= "MIME-Version: 1.0\r\n";
+				$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+				
+				$mailTpl = new ilTemplate("tpl.requestforhelpMail.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
+				
+				// require_once("Services/Init/classes/class.ilInitialisation.php");
+				// ilInitialisation::initILIAS();
+				$mailTpl->setVariable("LINK", ILIAS_HTTP_PATH ."/". $ilCtrl->getLinkTarget($this, "requestForHelp"));
+				
+				if(mail($mail_to, $subject, $mailTpl->get(), $headers))
+				{
+					ilUtil::sendSuccess("Frage gesendet!", true);
+				}
+				else 
+				{
+					ilUtil::sendError("E-Mail konnte nicht gesendet werden!", true);
+				}
+			}
+			else
+			{
+    				ilUtil::sendFailure("error on addQuest()", true);
+    		}
+    		
+    		$ilCtrl->redirect($this, "requestForHelp");
+    	}
+    	else
+    	{
+    		$this->request_for_help_form_gui->setValuesByPost();
+    		ilUtil::sendFailure("Einige Angaben sind unvollständig oder ungültig. Bitte korrigieren Sie Ihre Eingabe.", true);
+    		$ilCtrl->redirect($this, "requestForHelp");
+    	}
+    }
     
     
     /**

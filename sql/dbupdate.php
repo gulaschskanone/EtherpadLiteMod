@@ -496,7 +496,7 @@ foreach($sql as $s)
 	if(!$ilDB->tableExists($table_name))
 	{
 		$ilDB->createTable($table_name, $table_fields);
-		$ilDB->addPrimaryKey($table_name, array("pad_id", "quest_id"));
+		$ilDB->addPrimaryKey($table_name, array("quest_id"));
 		$ilDB->createSequence($table_name);
 	}
 ?>
