@@ -814,11 +814,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		
 			
 			// task description
-			/**
-			<!-- BEGIN task_block -->
-			   {TASK}
-			<!-- END task_block -->
-			*/
 			if($this->object->getTask())
 			{
 				$pad->setCurrentBlock("task_block");
@@ -827,10 +822,16 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 					// $panel->setHeading("Aufgabenstellung");
 					$panel->setBody($this->object->getTask());
 					$panel->setHeadingStyle(ilPanelGUI::HEADING_STYLE_SUBHEADING);
-				$pad->setVariable("TASK", $panel->getHTML());
+
+					include_once("./Services/Accordion/classes/class.ilAccordionGUI.php");					
+					$acc = new ilAccordionGUI();
+					$acc->setBehaviour(ilAccordionGUI::FIRST_OPEN);
+					$acc->setUseSessionStorage(true);
+					$acc->addItem("Aufgabenstellung", $panel->getHTML());
+
+				$pad->setVariable("TASK", $acc->getHTML());
 				$pad->parseCurrentBlock();
 			}
-			
 			
 			// pad
             $pad->setVariable("ENTER_FULLSCREEN",$this->txt("enter_fullscreen"));
