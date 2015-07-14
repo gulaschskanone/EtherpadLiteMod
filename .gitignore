@@ -45,3 +45,8 @@ Temporary Items
 .project
 development
 *.settings*
+
+to do
+
+*.log
+log
