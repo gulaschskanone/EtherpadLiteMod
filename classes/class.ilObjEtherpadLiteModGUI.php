@@ -235,13 +235,32 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         
 		// lecturer mail
 		$lm = new ilRadioGroupInputGUI("E-Mail-Adresse des Dozenten", "xct_eagle_eye_mail");
-			$option_owner = new ilRadioOption(ilObjUser::_lookupEmail($this->object->getOwner()),"owner", "Besitzer des Pads");
-		$lm->addOption($option_owner);
-			$option_other = new ilRadioOption("Andere","other", null);
-				$mail = new ilEMailInputGUI("E-Mail-Adresse", "other_lecturer_mail");
-				$mail->setInfo("Bitte verwenden Sie nur Uni-interne E-Mail-Adressen.");
+			// owner
+			$option_owner = new ilRadioOption("Besitzer des Pads","owner", ilObjUser::_lookupEmail($this->object->getOwner()));
+			$lm->addOption($option_owner);
+		
+			// tutoren
+			$mail_list = array();
+			foreach($this->getTutorListOfParentCourse($this->object->getRefId()) as $tutor)
+			{
+				$mail_list[] =  $tutor['firstname'] . $tutor['lastname'] . " &lt;" . $tutor['email'] . "&gt;";
+			}
+			$option_tutors = new ilRadioOption("Tutoren des übergeordneten Kurses","tutors", implode(", ", $mail_list));
+			if(!$this->getTutorListOfParentCourse($this->object->getRefId()))
+			{
+				$option_tutors->setDisabled(true);
+				$option_tutors->setInfo("Keinen übergeordneten Kurs oder keine Tutoren eines übergeordneten Kurses gefunden.");
+			}
+			$lm->addOption($option_tutors);
+
+			// by hand
+			$option_other = new ilRadioOption("Manuelle Eingabe","other", null);
+				$mail = new ilTextInputGUI("E-Mail-Adresse", "other_lecturer_mail");
+				$mail->setInfo("Mehrere E-Mail-Adressen kommasepariert (', ').");
        		$option_other->addSubItem($mail);
-		$lm->addOption($option_other);	        
+			$lm->addOption($option_other);	    
+		
+		$lm->setRequired(true);
 	    $this->form->addItem($lm);
 	    
 	    
@@ -413,9 +432,9 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         $values["show_comment"]= $this->object->getShowComment();
         $values["read_only"]= $this->object->getReadOnly();
                
-        if($this->object->getEagleEyeMail() == "owner")
+        if(in_array($this->object->getEagleEyeMail(), array('owner','tutors'), true ))
         {
-        	$values["xct_eagle_eye_mail"] = "owner";
+        	$values["xct_eagle_eye_mail"] = $this->object->getEagleEyeMail();
         }
         else
         {
@@ -458,9 +477,9 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             $this->object->setShowComment($this->form->getInput("show_comment"));
             $this->object->setReadOnly($this->form->getInput("read_only"));
             
-            if($this->form->getInput("xct_eagle_eye_mail") == "owner")
+            if($this->form->getInput("xct_eagle_eye_mail") != "other")
             {
-            	$this->object->setEagleEyeMail("owner");
+            	$this->object->setEagleEyeMail($this->form->getInput("xct_eagle_eye_mail"));
             }
             else
             {
@@ -575,8 +594,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 			$customTpl->setCurrentBlock("request_for_help_block");
 			$customTpl->setVariable("REQUEST_FOR_HELP_FORM", $this->requestForHelpForm());
 			$customTpl->parseCurrentBlock();
-		}
-
+		}		
 		
 		// list all quests
 		if($this->EtherpadLiteQuests->numberOfQuests() > 0)
@@ -958,10 +976,30 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 			if($this->EtherpadLiteQuests->addQuest())
 			{ 
 				// send mail to DOZENT
-				$mail_to = ($this->object->getEagleEyeMail() == "owner") ? ilObjUser::_lookupEmail($this->object->getOwner()) : $this->object->getEagleEyeMail();
+				if($this->object->getEagleEyeMail() == "owner")
+				{				
+					$mail_to = ilObjUser::_lookupEmail($this->object->getOwner());
+				}
+				elseif($this->object->getEagleEyeMail() == "tutors")
+				{
+					if($this->getTutorListOfParentCourse($this->object->getRefId()))
+					{
+						$mail_list = array();
+						foreach($this->getTutorListOfParentCourse($this->object->getRefId()) as $tutor)
+						{
+							$mail_list[] = $tutor['email'];
+						}
+						$mail_to = implode(", ", $mail_list);
+					}
+				}
+				else
+				{
+					$mail_to = $this->object->getEagleEyeMail();
+				}
+				
 				$subject = "compliant teamwork | Neue Frage";
 				
-				$headers = "From: noreply@ct.uni-passau.de\r\n";
+				$headers = "From: Compliant Teamwork Team | Universität Passau <noreply@uni-passau.de>\r\n";
 				$headers .= "MIME-Version: 1.0\r\n";
 				$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 				
@@ -977,7 +1015,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 				}
 				else 
 				{
-					ilUtil::sendError("E-Mail konnte nicht gesendet werden!", true);
+					ilUtil::sendFailure("E-Mail konnte nicht gesendet werden!", true);
 				}
 			}
 			else
@@ -1179,6 +1217,75 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	}
     }
    
+    /**
+     * get Tutor list
+     */ 
+    private function getTutorListOfParentCourse($obj_ref)
+    {
+    	// get parent course
+    	$max_steps = 5;
+    	$step = 0;
+    	do
+    	{
+ 			$parent = $this->getParentObjectRef($obj_ref);
+ 			$obj_ref = $parent->parent_ref;
+ 			$step++;
+    	} while ($parent->type != "crs" && $step<=$max_steps);
+ 		
+    	if($step==$max_steps)
+    	{
+    		return null;
+    	}
+    	else{
+    		// return tutor list of object
+    		return $this->getTutorListOfObject($parent->parent_id);
+    	}
+    }
     
+    private function getParentObjectRef($obj_ref)
+    {
+    	global $ilDB;
+    	/*
+    	 parent of an object
+    	select parent_id as parent_ref, parentref.obj_id as parent_id, object_data.type as type from crs_items as items join object_reference as ref join object_reference as parentref join object_data where items.obj_id = ref.ref_id AND parent_id = parentref.ref_id AND ref.obj_id = 358 AND object_data.obj_id = parentref.obj_id;
+    	*/
+    	
+    	$result = $ilDB->query("select parent_id as parent_ref, parentref.obj_id as parent_id, object_data.type as type from crs_items as items join object_reference as ref join object_reference as parentref join object_data where items.obj_id = ref.ref_id AND parent_id = parentref.ref_id AND object_data.obj_id = parentref.obj_id AND ref.ref_id = " . $ilDB->quote($obj_ref, "integer"));
+    	if($result->numRows() == 0)
+    	{
+    		return false;
+    	}
+    	$rec = $ilDB->fetchObject($result);
+    	 
+    	return $rec;
+    }
+    
+    private function getTutorListOfObject($object_id)
+    {
+    	global $ilDB;
+    	/*
+    	tutoren eines Kurses:
+    	SELECT rbua.usr_id, ud.login, ud.email FROM rbac_ua as rbua join usr_data as
+    	ud on rbua.usr_id = ud.usr_id where rbua.rol_id in
+    	(select obj_id from object_data where description like
+    	'Tutor of crs obj_no.268')
+    	*/
+    	 
+    	$result = $ilDB->query("SELECT rbua.usr_id, ud.login, ud.email, ud.firstname, ud.lastname FROM rbac_ua as rbua join usr_data as ".
+    	"ud on rbua.usr_id = ud.usr_id where rbua.rol_id in ".
+    	"(select obj_id from object_data where description like ".
+    	"'Tutor of crs obj_no.".$ilDB->quote($object_id, "integer")."')");
+    	if($result->numRows() == 0)
+    	{
+    		return false;
+    	}
+    	$rows = array();
+    	while ($rec = $ilDB->fetchAssoc($result))
+		{
+			$rows[] = $rec;
+		}
+    	
+    	return $rows;
+    }
 }
 ?>
