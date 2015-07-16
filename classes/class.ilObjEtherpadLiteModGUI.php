@@ -255,7 +255,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 
 			// by hand
 			$option_other = new ilRadioOption("Manuelle Eingabe","other", null);
-				$mail = new ilTextInputGUI("E-Mail-Adresse", "other_lecturer_mail");
+				$mail = new ilTextInputGUI("E-Mail-Adresse(n)", "other_lecturer_mail");
 				$mail->setInfo("Mehrere E-Mail-Adressen kommasepariert (', ').");
        		$option_other->addSubItem($mail);
 			$lm->addOption($option_other);	    
@@ -1072,9 +1072,37 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	}
  
  		// agreements   	
-    	$ci = new ilCustomInputGUI(($mode != "show") ? "Bitte willigen Sie in die folgenden Erklärungen ein: <span class='asterisk'>*</span>" : "Einsicht in abgegebene Erklärungen:", "");
-    	$this->user_properties_form_gui->addItem($ci);
-    	 
+    	// $ci = new ilCustomInputGUI(($mode != "show") ? "Bitte willigen Sie in die folgenden Erklärungen ein: <span class='asterisk'>*</span>" : "Einsicht in abgegebene Erklärungen:", "");
+    	// $this->user_properties_form_gui->addItem($ci);
+
+    	if(!$this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())  || $mode == "show")
+    	{
+    		$ia = new ilCheckboxInputGUI(($mode != "show") ? "Bitte willigen Sie in Folgendes ein: <span class='asterisk'>*</span>" : "Einsicht in abgegebene Erklärungen:", "IPropPolicy");
+    		$ia->setAdditionalAttributes("required");
+    		$ia->setOptionTitle("<a id='IPropPolicyMODAL_trigger'>Urheberrechtserklärung für dieses Klausurpad</a>");
+    		if ($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID()))
+    		{
+    			$ia->setInfo($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())->getConsentedAt());
+    			$ia->setDisabled(true);
+    		}
+    		$ia->setValue("iprop_agt");
+    		$aa = new ilRadioGroupInputGUI("Namensnennung", "attribution");
+    		if ($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID()))
+    		{
+    			$aa->setDisabled(true);
+    		}
+    		$aa->setRequired(true);
+    		$noa = new ilRadioOption("Ich verzichte auf die Nennung meines Klarnamens bei der Veröffentlichung der Klausur und möchte anonym bleiben.");
+    		$noa->setValue("no");
+    		$aa->addOption($noa);
+    		$aa->setValue("no");
+    		$yesa = new ilRadioOption("Ich bin mit der Nennung meines Klarnamens als Verfasser der Klausur bei der Veröffentlichung einverstanden. Hierzu wird die bestehende Pseudonymisierung durch das InteLeC-Zentrum der Universität Passau aufgehoben (vgl. Datenschutzerklärung)");
+    		$yesa->setValue("yes");
+    		$aa->addOption($yesa);
+    		$ia->addSubItem($aa);
+    		$this->user_properties_form_gui->addItem($ia);
+    	}
+    	
     	if(!$this->EtherpadLiteUser->getPolicyAgreement("Rules", $this->object->getEtherpadLiteID())  || $mode == "show")
     	{
     		$ra = new ilCheckboxInputGUI("", "Rules");
@@ -1103,33 +1131,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     		$this->user_properties_form_gui->addItem($pa);
     	}
     
-    	if(!$this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())  || $mode == "show")
-    	{
-	    	$ia = new ilCheckboxInputGUI("", "IPropPolicy");
-	    	$ia->setAdditionalAttributes("required");
-	    	$ia->setOptionTitle("<a id='IPropPolicyMODAL_trigger'>Urheberrechtserklärung für dieses Klausurpad</a>");
-    	    if ($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID()))
-    		{
-    			$ia->setInfo($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())->getConsentedAt());
-    			$ia->setDisabled(true);
-    		}
-	    	$ia->setValue("iprop_agt");
-	    		$aa = new ilRadioGroupInputGUI("Namensnennung", "attribution");
-	    		if ($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID()))
-	    		{
-	    			$aa->setDisabled(true);
-	    		}
-	    		$aa->setRequired(true);
-	    			$noa = new ilRadioOption("Ich verzichte auf die Nennung meines Klarnamens bei der Veröffentlichung der Klausur und möchte anonym bleiben.");
-	    			$noa->setValue("no");
-	    		$aa->addOption($noa);
-	    		$aa->setValue("no");
-	    			$yesa = new ilRadioOption("Ich bin mit der Nennung meines Klarnamens als Verfasser der Klausur bei der Veröffentlichung einverstanden. Hierzu wird die bestehende Pseudonymisierung durch das InteLeC-Zentrum der Universität Passau aufgehoben (vgl. Datenschutzerklärung)");
-	    			$yesa->setValue("yes");
-	    		$aa->addOption($yesa);
-	    	$ia->addSubItem($aa);
-	    	$this->user_properties_form_gui->addItem($ia);
-    	}   	
+	
     		
     	$this->user_properties_form_gui->addCommandButton("userPropertiesFormSave", $lng->txt("save"));
     	$this->user_properties_form_gui->setFormAction($ilCtrl->getFormAction($this));
