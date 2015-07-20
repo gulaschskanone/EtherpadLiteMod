@@ -57,6 +57,14 @@ class ilEtherpadLiteModConfigGUI extends ilPluginConfigGUI
         	),
         ),
         
+        "mail_settings" => array("type"=>"ilCustomInputGUI", "info"=>"info_mail_settings", "options"=>null,"subelements"=>array(
+        		"subject"       => array("type"=>"ilTextInputGUI","info"=>"info_subject","options"=>null),
+        		"sender"       => array("type"=>"ilTextInputGUI","info"=>"info_sender","options"=>null),
+        		"sendermail"       => array("type"=>"ilTextInputGUI","info"=>"info_sendermail","options"=>null),
+        		"tplt_path"       => array("type"=>"ilTextInputGUI","info"=>"info_tplt_path","options"=>null),
+        	),
+        ),
+        
         "allow_read_only"      => array("type"=>"ilCheckboxInputGUI","info"=>"info_allow_read_only","options"=>null,"subelements"=>null),
 
         "default_show_controls"     => array("type"=>"ilCheckboxInputGUI","info"=>"info_default_show_controls","options"=>null,"subelements"=>array(

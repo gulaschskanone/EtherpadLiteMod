@@ -41,17 +41,20 @@ info_allow_read_only#:#Allow an Etherpad to be set to read only mode in the sett
 epadl_version#:#Etherpad Lite Version
 info_epadl_version#:#Please select which Etherpad Lite server version you are using on the server.
 
-author_identification#:#Author identification
-info_author_identification#:#NOTE: Participants write under their full name by default.
-info_author_identification_selectable#:#This can be changed in the pad settings on the following page.
-fullname#:#full name
-info_fullname#:#(e.g. John Q. Public)
-username#:#Ilias user name
-info_username#:#(e.g. public99)
-info_udf#:#user defined text field
 no_name_set#:#Missing Value
 unknown_identity#:#Unknown
-at#:#at
+
+mail_settings#:#E-Mail settings ("eagle eye")
+info_mail_settings#:#&nbsp;
+mail_settings_subject#:#Subject
+info_subject#:#&nbsp;
+mail_settings_sender#:#Sender name
+info_sender#:#&nbsp;
+mail_settings_sendermail#:#Sender mail adress
+info_sendermail#:#&nbsp;
+mail_settings_tplt_path#:#Path
+info_tplt_path#:#&nbsp; 
+
 
 show_chat#:#Show Chat
 info_show_chat#:#

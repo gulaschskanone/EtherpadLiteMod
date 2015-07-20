@@ -998,13 +998,18 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 					$mail_to = $this->object->getEagleEyeMail();
 				}
 				
-				$subject = "compliant teamwork | Neue Frage";
+				// admin settings
+				include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
+				$this->adminSettings = new ilEtherpadLiteModConfig();
 				
-				$headers = "From: Compliant Teamwork Team | Universität Passau <noreply@uni-passau.de>\r\n";
+				
+				$subject = $this->adminSettings->getValue("mail_settings_subject");
+				
+				$headers = "From: ".$this->adminSettings->getValue('mail_settings_sender')." <".$this->adminSettings->getValue('mail_settings_sendermail').">\r\n";
 				$headers .= "MIME-Version: 1.0\r\n";
 				$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 				
-				$mailTpl = new ilTemplate("tpl.requestforhelpMail.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
+				$mailTpl = new ilTemplate($this->adminSettings->getValue("mail_settings_tplt_path"), true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
 				
 				// require_once("Services/Init/classes/class.ilInitialisation.php");
 				// ilInitialisation::initILIAS();

@@ -561,3 +561,12 @@ foreach($sql as $s)
 		);
 	}
 ?>
+
+<#21>
+<?php 
+	$ilDB->query("INSERT INTO `rep_robj_xct_adm_set` (epkey, epvalue) SELECT 'mail_settings_tplt_path','tpl.requestforhelpMail.html' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM rep_robj_xct_adm_set WHERE epkey = 'mail_settings_tplt_path');");
+	$ilDB->query("INSERT INTO `rep_robj_xct_adm_set` (epkey, epvalue) SELECT 'mail_settings_subject','compliant teamwork | Neue Frage' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM rep_robj_xct_adm_set WHERE epkey = 'mail_settings_subject');");
+	$ilDB->query("INSERT INTO `rep_robj_xct_adm_set` (epkey, epvalue) SELECT 'mail_settings_sender','Compliant Teamwork Team | Universität Passau' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM rep_robj_xct_adm_set WHERE epkey = 'mail_settings_sender');");
+	$ilDB->query("INSERT INTO `rep_robj_xct_adm_set` (epkey, epvalue) SELECT 'mail_settings_sendermail','noreply@uni-passau.de' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM rep_robj_xct_adm_set WHERE epkey = 'mail_settings_sendermail');");
+
+?>
