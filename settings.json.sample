@@ -1,0 +1,62 @@
+/*
+ * some significant settings
+ */
+
+{ 
+  /* IP and port which etherpad should bind at */
+  "ip" : "???",
+  "port" : ???,
+
+  /* Database connection (postgres, sqlite or mysql) */
+  "dbType" : "mysql",
+  "dbSettings" : {
+		"user"    : "???", 
+		"host"    : "???", 
+		"password": "???", 
+		"database": "???"
+  },
+   
+  /* Default Pad behavior, users can override by changing */
+  "padOptions": {
+		"noColors"			: false,
+  		"showControls"		: true,
+		"showChat"			: true,
+    	"showLineNumbers"	: false,
+    	"useMonospaceFont"	: false,
+    	"userName"			: false,
+    	"userColor"			: false,
+    	"rtl"				: false,
+    	"alwaysShowChat"	: false,
+    	"chatAndUsers"		: false,
+    	"lang"				: "de"
+  },
+  
+    /* enable toc (ep_table_of_contents) by default */
+  "ep_toc": { 
+    	"disable_by_default": false
+  },
+  
+  /* enable page view (ep_page_view) by default */
+  "ep_page_view_default" : true,
+   
+  /* Shoud we suppress errors from being visible in the default Pad Text? */
+  "suppressErrorsInPadText" : true,
+  
+  /* Users must have a session to access pads. This effectively allows only group pads to be accessed. */
+  "requireSession" : true,
+  
+  /* if true, all css & js will be minified before sending to the client. This will improve the loading performance massivly, 
+     but makes it impossible to debug the javascript/css */
+  "minify" : false,
+
+  /* This is the path to the Abiword executable. Setting it to null, disables abiword.
+     Abiword is needed to advanced import/export features of pads*/  
+  "abiword" : "path/to/abiword",
+  
+  /*when you use NginX or another proxy/ load-balancer set this to true*/
+  "trustProxy" : true,
+  
+  /* Privacy: disable IP logging */
+  "disableIPlogging" : true,  
+   
+}
