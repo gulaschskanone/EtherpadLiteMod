@@ -71,7 +71,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
                 break;
 
             case "showContent": // list all commands that need read permission here
-            case "agreePolicy":
             case "requestForHelp":
             case "userPropertiesFormSave":
             case "requestForHelpFormSave":
@@ -134,15 +133,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         	$ilTabs->addTab("showProfile", "Nutzerprofil", $ilCtrl->getLinkTarget($this, "showProfile"));
         }
         
-        //
-        // revoke
-        /* !only fr demonstration !
-        if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
-        {
-        	$ilTabs->addTab("revokeConsent", "Einwilligungen zurückziehen (DEMO)", $ilCtrl->getLinkTarget($this, "revokeConsent"));
-        }
-        */
-
         // eagle eye
         include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
         $this->EtherpadLiteUser = new ilEtherpadLiteModUser();
@@ -206,26 +196,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	        
         //online
         $cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
-        $this->form->addItem($cb);
-
-// 	    // time restriction
-// 		$restriction = new ilRadioGroupInputGUI($this->txt("time_restriction"), "time_restriction");
-// 			$offline = new ilRadioOption($this->txt("offline"),"offline", null);
-// 		    $now = new ilRadioOption($this->txt("online"),"online", null);
-// 		    $timeframe = new ilRadioOption($this->txt("restricted"),"restricted", null);
-		    	
-// 		    	include_once("./Services/Form/classes/class.ilDateDurationInputGUI.php");
-// 		    	$duration = new ilDateDurationInputGUI("Zeitraum", "duration", null);
-// 		    	$duration->setShowTime(true);
-// 		    	$duration->setMinuteStepSize("15");
-		    	
-// 		    $timeframe->addSubItem($duration);
-
-// 		$restriction->addOption($offline);
-// 		$restriction->addOption($now);
-// 		$restriction->addOption($timeframe);		    
-// 		$this->form->addItem($restriction);
-        
+        $this->form->addItem($cb);     
         
 	    // task
         $task = new ilTextAreaInputGUI("Aufgabenstellung", "xct_task");
@@ -277,14 +248,12 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
         $this->adminSettings = new ilEtherpadLiteModConfig();
                 	
-        	
 			// read only
 		        if($this->adminSettings->getValue("allow_read_only"))
 		        {
 					$ro = new ilCheckboxInputGUI($this->txt("read_only"), "read_only");
 					$this->form->addItem($ro);
 				}
-
 
 	        // show Chat
 		        if($this->adminSettings->getValue("conf_show_chat"))
@@ -499,74 +468,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     }
 
 
-    
-    /**
-     * save nickname
-     
-    function savePseudonym(){
-    	global $lng, $ilCtrl;
-    	
-    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
-    	$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
-    	
-    	if($_POST["nickname"])
-    	{
-	    	if($this->EtherpadLiteUser->setPseudonym(ilUtil::stripSlashes($_POST["nickname"])))
-	    	{
-	    		ilUtil::sendFailure("error on setPseudonym()", true);
-	    	}
-	    	elseif(!$this->EtherpadLiteUser->updateUser())
-	    	{
-	    		ilUtil::sendFailure("error on updateUser()", true);
-	    	}
-    	}
-    	ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
-    	$ilCtrl->redirect($this, "showContent");
-    }
-    */
-    
-// --------------------------------------------------------------------------------------
-//
-// Agree Policies
-//    
-    /**
-     * agree policy
-     */
-    function agreePolicy()
-    {
-    	global $lng, $ilCtrl;
-    	
-    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModUser.php");
-    	$this->EtherpadLiteUser = new ilEtherpadLiteModUser();
-    	
-    	if($_POST['tac-submit'])
-    	{
-    		$policiesContent = $this->policiesContent();
-    		
-    		$attribution = ($_POST['attribution'] == "yes") ? 1 : 0;
-    		
-    		foreach($_POST['tac'] as $type)
-    		{
-    		    if($policiesContent[$type]['hash'] && $this->EtherpadLiteUser->agreePolicy(
-    		    		$type, 
-    		    		$policiesContent[$type]['hash'], 
-    		    		$this->object->getEtherpadLiteID(),
-						$attribution)
-				)
-	    		{
-	    			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
-	    		}
-	    		else
-	    		{
-	    			ilUtil::sendFailure("error", true);
-	    		}
-    		}
-    	}
-    	$ilCtrl->redirect($this, "showContent");
-
-    }
-
-
    
 //
 // eagle eye (request for help)
@@ -656,7 +557,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		$tpl->setContent($customTpl->get());
 		
 	}
-// --------------------------------------------------------------------------------------	
 	
 //
 // save response
@@ -734,8 +634,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	
 //
 // Show content
-//
-
+/
     /**
      * Show content
      */
