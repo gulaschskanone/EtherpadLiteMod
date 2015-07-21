@@ -766,8 +766,8 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             global $ilAccess;
             if ($ilAccess->checkAccess("write", "", $this->object->getRefId()) && !$this->EtherpadLiteUser->getPseudonym())
             {
-            	$this->EtherpadLiteUser->setPseudonym($ilUser->getFullname());
-            	$this->EtherpadLiteUser->updateUser();
+            	//$this->EtherpadLiteUser->setPseudonym($ilUser->getFullname());
+            	// $this->EtherpadLiteUser->updateUser();
             }
             
                        
@@ -1082,12 +1082,12 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 
     	if(!$this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())  || $mode == "show")
     	{
-    		$ia = new ilCheckboxInputGUI(($mode != "show") ? "Bitte willigen Sie in Folgendes ein: <span class='asterisk'>*</span>" : "Einsicht in abgegebene Erklärungen:", "IPropPolicy");
+    		$ia = new ilCheckboxInputGUI(($mode != "show") ? "Bitte willigen Sie in Folgendes ein: <span class='asterisk'>*</span>" : "Erklärungen:", "IPropPolicy");
     		$ia->setAdditionalAttributes("required");
     		$ia->setOptionTitle("<a id='IPropPolicyMODAL_trigger'>Urheberrechtserklärung für dieses Klausurpad</a>");
     		if ($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID()))
     		{
-    			$ia->setInfo($this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())->getConsentedAt());
+    			$ia->setInfo("Zur Einsichtnahme. Eingewilligt am ". $this->EtherpadLiteUser->getPolicyAgreement("IPropPolicy", $this->object->getEtherpadLiteID())->getConsentedAt());
     			$ia->setDisabled(true);
     		}
     		$ia->setValue("iprop_agt");
@@ -1115,7 +1115,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     		$ra->setOptionTitle("<a id='RulesMODAL_trigger'>Nutzungsbedingungen</a>");
     		if ($mode == "show" && $this->EtherpadLiteUser->getPolicyAgreement("Rules", $this->object->getEtherpadLiteID()))
     		{
-    			$ra->setInfo($this->EtherpadLiteUser->getPolicyAgreement("Rules", $this->object->getEtherpadLiteID())->getConsentedAt());
+    			$ra->setInfo("Zur Einsichtnahme. Eingewilligt am ". $this->EtherpadLiteUser->getPolicyAgreement("Rules", $this->object->getEtherpadLiteID())->getConsentedAt());
     			$ra->setDisabled(true);
     		}
     		$ra->setValue("rules_agt");
@@ -1129,7 +1129,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     		$pa->setOptionTitle("<a id='PrivacyPolicyMODAL_trigger'>Datenschutzerklärung</a>");
     		if ($this->EtherpadLiteUser->getPolicyAgreement("PrivacyPolicy", $this->object->getEtherpadLiteID()))
     		{
-    			$pa->setInfo($this->EtherpadLiteUser->getPolicyAgreement("PrivacyPolicy", $this->object->getEtherpadLiteID())->getConsentedAt());
+    			$pa->setInfo("Zur Einsichtnahme. Eingewilligt am ". $this->EtherpadLiteUser->getPolicyAgreement("PrivacyPolicy", $this->object->getEtherpadLiteID())->getConsentedAt());
     			$pa->setDisabled(true);
     		}
     		$pa->setValue("privacy_agt");

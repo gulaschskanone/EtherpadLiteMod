@@ -59,4 +59,5 @@
   /* Privacy: disable IP logging */
   "disableIPlogging" : true,  
    
+  /* logging http://log4javascript.org */
 }
