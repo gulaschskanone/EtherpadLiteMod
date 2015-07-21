@@ -634,7 +634,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	
 //
 // Show content
-/
+//
     /**
      * Show content
      */
