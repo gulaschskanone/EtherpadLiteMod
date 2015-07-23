@@ -35,9 +35,6 @@
   "ep_toc": { 
     	"disable_by_default": false
   },
-  
-  /* enable page view (ep_page_view) by default */
-  "ep_page_view_default" : true,
    
   /* Shoud we suppress errors from being visible in the default Pad Text? */
   "suppressErrorsInPadText" : true,
