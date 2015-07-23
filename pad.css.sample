@@ -18,12 +18,7 @@
   margin-left: 50px !important;
 }
 
-/* increase font-size and line-height */
-#innerdocbody {
-  font-size: 1.5em !important;
-  line-height: 1.6em !important; 
-}
-
+/* improve typeface */
 h1, h2, h3 {padding: 10px 0;}
 h4, h5, h6 {padding: 5px 0;}
 h1, .toch1 {font-size:1.5em !important;}
@@ -33,6 +28,14 @@ h4, .toch4 {font-size:1.2em !important;}
 h5, .toch5 {font-size:1.1em !important;}
 h6, .toch6 {font-size:1.0em !important;}
 
+#innerdocbody {
+  font-size: 1.4em !important;
+  line-height: 1.5em !important; 
+}
+
+#innerdocbody > div {
+	padding-bottom:10px;
+}
 
 /*
  * ep_stats support
