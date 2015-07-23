@@ -101,6 +101,28 @@
     {
         $(".import_export").hide();
     }
+    else
+    {
+    	/**
+    	 *  ep_stats 
+    	 */ 
+    	// update values
+    	$("#options-stats").click()
+    	
+    	// hide unnecessary
+		$('#stats').appendTo('#import_export');
+    	$('#padStats').hide();
+    	$('#linesContributed').hide();
+    	$('#linesAsOnlyContributor').hide();
+    	$('#numberOfCharsIncWS').hide();
+    	$('#numberOfCharsExcWS').hide();
+    	$('#stats').show(); 
+    	
+    	// translation
+    	$('.authorStats > h1').html('Autorenstatistiken');
+    	$('#wordsContributed > h2').html('Anzahl der beigetragenen Worte');
+    	
+    }
     if(parameters["showTimelineBlock"] != "true")
     {
         $(".showTimeSlider").hide();
@@ -137,6 +159,8 @@
 	   	$("#settings.popup").css('maxWidth', '300px');
 	   	// hide font selection
 	   	// $("#settings .column table tr").eq(0).hide();
+	   	// hide ep_stats button
+	   	$("#options-stats").parent().hide()
    });
    
    // ep_comments_page support

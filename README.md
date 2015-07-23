@@ -22,7 +22,7 @@ Copy the files *pad.[js|css].sample* to *node_modules/ep_etherpad-lite/static/cu
 
 
 ### Install Dependencies / Extensions ###
-`npm install ep_comments_page ep_table_of_contents ep_page_view ep_spellcheck`
+`npm install ep_comments_page ep_table_of_contents ep_page_view ep_spellcheck ep_stats`
 
 ### Activate Plugin in ILIAS ###
 ... on *Administration >> Plugins*. 
