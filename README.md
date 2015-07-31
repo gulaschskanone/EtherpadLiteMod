@@ -7,7 +7,7 @@ This plugin based on jrocho/ILIAS-Etherpad-Lite-Plugin v1.1.2
 
 ### Basically ###
 After installing ILIAS and etherpad copy the plugin files to *Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/* in the directory structure of your ILIAS installation. 
-Set write permissions on */log/*.
+Set write permissions on */log/* and */exports/*.
 
 ### Customized configuration (files) ###
 Copy the files *pad.[js|css].sample* to *node_modules/ep_etherpad-lite/static/custom/pad.[js|css]* within your etherpad-lite (server) folder and set in the *settings.json*

@@ -39,6 +39,8 @@ include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 */
 class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 {
+	const MODULEPATH = "Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/";
+	
 		
     /**
      * Initialisation
@@ -66,6 +68,9 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
             case "editProperties": // list all commands that need write permission here
             case "updateProperties":
             case "saveResponse":
+            case "export":
+           	case "exportFormSave":
+           	case "exportFormUpdate":
                 $this->checkPermission("write");
                 $this->$cmd();
                 break;
@@ -146,6 +151,11 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	        }
         }
         
+        // export
+        if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
+        {
+        	$ilTabs->addTab("export", "Export", $ilCtrl->getLinkTarget($this, "export"));
+        }
 
     }
 
@@ -731,7 +741,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 				$pad->setVariable("TASK", $acc->getHTML());
 				$pad->parseCurrentBlock();
 			}
-			
+						
 			// pad
             $pad->setVariable("ENTER_FULLSCREEN",$this->txt("enter_fullscreen"));
             $pad->setVariable("LEAVE_FULLSCREEN",$this->txt("leave_fullscreen"));
@@ -1194,5 +1204,316 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	
     	return $rows;
     }
+    
+    
+    /**
+     * init Export Form
+     */
+    public function initExportForm($mode = "new")
+    {
+    	global $ilDB, $ilCtrl;
+    	
+    	include_once("./Services/Form/classes/class.ilPropertyFormGUI.php");
+    	$this->authors_form_gui = new ilPropertyFormGUI();
+
+    	// title
+    	$ti = new ilTextInputGUI("<b>".$this->txt("title")."</b>", "title");
+    	$ti->setMaxLength(128);
+    	$ti->setInfo("Pflichtfeld");
+    	$this->authors_form_gui->addItem($ti);
+    	
+    	// task
+    	/*
+    	$task = new ilTextAreaInputGUI("Aufgabenstellung", "task_desc");
+    	$task->setUseRte(true);
+    	$task->setRteTagSet('mini');
+    	$task->setValue($this->object->getTask());
+    	$task->setDisabled(true);
+    	*/
+    	$task = new ilCustomInputGUI("<b>Aufgabenstellung:</b>", "task_desc");
+    	$task->setHtml($this->object->getTask());
+    	$this->authors_form_gui->addItem($task);
+    	
+    	
+    	// author list
+    	$author_list = new ilCustomInputGUI("<b>Autoren:</b>", "list_authors");
+    	$result = $ilDB->query("SELECT usr_id, login, attribution, pseudonym, firstname, lastname FROM `rep_robj_xct_ip_agt` as agt "
+    	."INNER JOIN `rep_robj_xct_user` as user "
+    	."ON user.username = agt.username "
+    	."INNER JOIN `usr_data` "
+    	."ON `usr_data`.login = user.username "
+    	."WHERE `pad_id` = " . $ilDB->quote($this->object->getEtherpadLiteID(), "text"));
+		$rows = array();
+		while ($rec = $ilDB->fetchAssoc($result))
+		{
+			$rows[] = $rec;
+		}
+    	foreach ($rows as $author)
+    	{
+    		$text_input = new ilTextInputGUI(null, "authors[".$author['usr_id']."]");
+    		$text_input->setValue($author["pseudonym"] . (($author['attribution']) ? " **" : " *"));
+    		$text_input->setDisabled(true);
+    		$author_list->addSubItem($text_input);
+    		
+    	}
+    	$this->authors_form_gui->addItem($author_list);
+    	
+    	// Pad Text
+    	$text = new ilCustomInputGUI("<b>Lösung:</b>", "solution");
+    	$this->object->init();
+    	try {
+    		$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
+    		$text->setHtml($padContents->html);
+    	} catch (Exception $e) {
+    		$text->setHtml("<pre>FEHLER</pre>");
+    	}
+    	$this->authors_form_gui->addItem($text);
+    	
+    	
+    	// buttons and action
+    	$this->authors_form_gui->setTitle((($mode == "new") ? "Exportieren" : "Erneut exportieren"));
+    	$this->authors_form_gui->setDescription("Vorschau und Autorenauswahl");
+    	if($mode == "new") 
+    	{
+    		$this->authors_form_gui->addCommandButton("exportFormSave", "Stand sichern");
+    	}
+    	elseif($mode == "update") 
+    	{
+    		$this->authors_form_gui->addCommandButton("exportFormUpdate", "Stand überschreiben");
+    	}
+    	$this->authors_form_gui->setFormAction($ilCtrl->getFormAction($this));
+    }
+    
+    /**
+     * export FORM
+     */
+    public function exportForm($mode)
+    {
+    	$this->initExportForm($mode);
+    	return $this->authors_form_gui->getHtml();
+    }
+    
+    /**
+     * export FORM REPLACE
+     */
+    public function exportFormUpdate()
+    {  	
+    	global $tpl, $lng, $ilCtrl;
+    	
+    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModExport.php");
+    	$this->EtherpadLiteExport = new ilEtherpadLiteModExport();
+
+    	try {
+    		$this->object->init();
+    	
+    		// set pad id
+    		$this->EtherpadLiteExport->setEpadlID($this->object->getEtherpadLiteID());
+    	
+    		// set task
+    		$this->EtherpadLiteExport->setTask($this->object->getTask());
+    	
+    		// set solution
+    		$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
+    		$this->EtherpadLiteExport->setSolution($padContents->html);   		
+    		
+	    	// set POST-vars
+    		$this->initExportForm();
+    		if ($this->authors_form_gui->checkInput()  && $this->authors_form_gui->getInput("title"))
+    		{
+    			// set authors
+    			foreach($_POST["authors"] as $usr_id => $nickname)
+    			{
+    				if(substr_count($nickname, '*') == 1)
+    				{
+    					$this->EtherpadLiteExport->addAuthor($nickname);
+    				}
+    				else
+    				{
+    					$this->EtherpadLiteExport->addAuthor(ilObjUser::_lookupFullname($usr_id));
+    				}
+    			}
+    			
+    			// set title
+    			$this->EtherpadLiteExport->setTitle($this->authors_form_gui->getInput("title"));
+	    				    	
+	    		// update db
+	    		$this->EtherpadLiteExport->doUpdate();
+		    	
+		    	// save to file
+		    	$customTpl = new ilTemplate("tpl.exportPDF.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
+		    	$customTpl->setVariable("TASKDESC", $this->EtherpadLiteExport->getTask());
+		    	$customTpl->setVariable("PADTEXT", $this->EtherpadLiteExport->getSolution());
+		    	$customTpl->setVariable("PADTITLE", $this->EtherpadLiteExport->getTitle());
+		    	$customTpl->setVariable("PADAUTHORS", "- ".implode("<br/>- ", $this->EtherpadLiteExport->getAuthors()));
+		    	$this->generatePDF($customTpl->get(), "F", "export_".$this->object->getEtherpadLiteID());
+    		}
+	    	else
+	    	{
+	    		ilUtil::sendFailure("Einige Angaben sind unvollständig oder ungültig. Bitte korrigieren Sie Ihre Eingabe.", true);
+	    		$ilCtrl->redirect($this, "export");
+	    	}
+    		    	
+    		ilUtil::sendSuccess("Erfolgreich aktualisiert!", true);
+    	
+    	} catch (Exception $e) {
+    		ilUtil::sendFailure("Konnte nicht aktualisiert werden! ". $e, true);
+    	}
+    	
+    	$ilCtrl->redirect($this, "export");
+    }
+    
+    /**
+     * export FORM SAVE
+     */
+    public function exportFormSave()
+    {
+    	global $lng, $ilCtrl;
+    	
+    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModExport.php");
+    	$this->EtherpadLiteExport = new ilEtherpadLiteModExport();
+    	
+    	try {
+    		$this->object->init();
+    		
+    		// set pad id
+    		$this->EtherpadLiteExport->setEpadlID($this->object->getEtherpadLiteID());
+    		
+	    	// set task
+	    	$this->EtherpadLiteExport->setTask($this->object->getTask());
+	    	
+	    	// set solution
+	    	$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
+	    	$this->EtherpadLiteExport->setSolution($padContents->html);
+
+	    	// set POST-vars
+    		$this->initExportForm();
+    		if ($this->authors_form_gui->checkInput() && $this->authors_form_gui->getInput("title"))
+    		{
+    			// set authors
+    			foreach($_POST["authors"] as $usr_id => $nickname)
+    			{
+    				if(substr_count($nickname, '*') == 1)
+    				{
+    					$this->EtherpadLiteExport->addAuthor($nickname);
+    				}
+    				else
+    				{
+    					$this->EtherpadLiteExport->addAuthor(ilObjUser::_lookupFullname($usr_id));
+    				}
+    			}
+    		    		
+	    		// set title			
+    			$this->EtherpadLiteExport->setTitle($this->authors_form_gui->getInput("title"));
+	    	
+		    	// save to db
+		    	$this->EtherpadLiteExport->doCreate();
+		    	
+		    	// save to file
+		    	$customTpl = new ilTemplate("tpl.exportPDF.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
+		    	$customTpl->setVariable("TASKDESC", $this->EtherpadLiteExport->getTask());
+		    	$customTpl->setVariable("PADTEXT", $this->EtherpadLiteExport->getSolution());
+		    	$customTpl->setVariable("PADTITLE", $this->EtherpadLiteExport->getTitle());
+		    	$customTpl->setVariable("PADAUTHORS", "- ".implode("<br/>- ", $this->EtherpadLiteExport->getAuthors()));
+		    	$this->generatePDF($customTpl->get(), "F", "export_".$this->object->getEtherpadLiteID());
+		    	
+		    	
+		    	ilUtil::sendSuccess("Erfolgreich gesichert!", true);
+    		}
+    		else
+    		{
+    			ilUtil::sendFailure("Einige Angaben sind unvollständig oder ungültig. Bitte korrigieren Sie Ihre Eingabe.", true);
+    			$ilCtrl->redirect($this, "export");
+    		}
+    	
+	    	
+    	} catch (Exception $e) {
+    		ilUtil::sendFailure("Konnte nicht gesichert werden! ". $e, true);
+    	}
+    	
+		$ilCtrl->redirect($this, "export");
+    }
+    
+
+    
+    
+    /**
+     * export page
+     * 
+     */
+    public function export(){
+    	global $tpl, $ilTabs, $ilUser, $lng, $ilCtrl, $ilDB;
+    	 	
+    	$ilTabs->activateTab("export");
+    	   	
+    	$customTpl = new ilTemplate("tpl.export.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
+
+    	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModExport.php");
+    	$this->EtherpadLiteExport = new ilEtherpadLiteModExport();
+    	 
+		$this->EtherpadLiteExport->setEpadlID($this->object->getEtherpadLiteID());
+		if($this->EtherpadLiteExport->doRead())
+		{
+			// view
+			$customTpl->setCurrentBlock("export_view");
+			$customTpl->setVariable("EXPORT_VIEW_TITLE", $this->EtherpadLiteExport->getTitle());
+			$customTpl->setVariable("EXPORT_VIEW_CREATION", $this->EtherpadLiteExport->getCreatedAt());
+			$customTpl->setVariable("EXPORT_DOWNLOAD", self::MODULEPATH."exports/export_".$this->EtherpadLiteExport->getEpadlID().".pdf"); // <a href='".$ilCtrl->getLinkTarget($this, "download")."'>Download</a>
+			$customTpl->parseCurrentBlock();
+			
+			// update form
+			$customTpl->setCurrentBlock("export_form");
+			$customTpl->setVariable("EXPORT_FORM", $this->exportForm("update"));
+			$customTpl->parseCurrentBlock();
+		}
+		else
+		{
+			// create form
+			$customTpl->setCurrentBlock("export_form");
+			$customTpl->setVariable("EXPORT_FORM", $this->exportForm("new"));
+			$customTpl->parseCurrentBlock();
+		}
+				
+    	
+    	// render
+    	$tpl->addCss("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/templates/css/export.css");
+    	$tpl->addJavaScript("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/templates/js/export.js");
+    	$tpl->setContent($customTpl->get());
+    	
+    }
+    
+    
+    /**
+     * pdf generation
+     */
+    
+    public static function generatePDF($pdf_output, $output_mode, $filename=null) // (I - Inline, D - Download, F - File)
+    {  	   	   	
+    	// filename
+    	if (substr($filename, strlen($filename) - 4, 4) != '.pdf')
+    	{
+    		$filename .= '.pdf';
+    	}
+    	if($output_mode == "F")
+    	{
+    		$filename = self::MODULEPATH."exports/".$filename;
+    	}    
+    	
+    	// processing
+    	require_once './Services/PDFGeneration/classes/class.ilPDFGeneration.php';
+    
+    	$job = new ilPDFGenerationJob();
+    	$job->setAutoPageBreak(true)
+    	->setCreator('Compliant Teamwork')
+    	->setFilename($filename)
+    	->setMarginLeft('20')
+    	->setMarginRight('20')
+    	->setMarginTop('20')
+    	->setMarginBottom('20')
+    	->setOutputMode($output_mode)
+    	->addPage($pdf_output);
+    
+    	ilPDFGeneration::doJob($job);
+    }    
+
 }
 ?>

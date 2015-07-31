@@ -1,0 +1,34 @@
+
+/*
+label[for^=author]
+{
+	width: 100px;	
+}
+input.form-control
+{
+	width: 20% !important; 
+}
+*/
+
+label[for^=author]:after 
+{
+    content: "";
+    background: url("../../../../../../../../../templates/default/images/emoticons/icon_kick.gif") 0 5px no-repeat;
+	float: right;
+	width:10px;
+	height: 15px;
+}
+
+p
+{
+	hyphens: auto; 
+    text-align: justify;
+}
+
+.form-group > div
+{
+	background-color: #f8f8f8;
+	padding-top:5px;
+	padding-bottom:5px;
+}
+

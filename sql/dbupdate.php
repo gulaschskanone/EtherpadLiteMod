@@ -570,3 +570,43 @@ foreach($sql as $s)
 	$ilDB->query("INSERT INTO `rep_robj_xct_adm_set` (epkey, epvalue) SELECT 'mail_settings_sendermail','noreply@uni-passau.de' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM rep_robj_xct_adm_set WHERE epkey = 'mail_settings_sendermail');");
 
 ?>
+
+<#22>
+<?php 
+	$table_name = 'rep_robj_xct_exports';
+	$table_fields = array(
+			'epadl_id' => array(
+					'type' => 'text',
+					'length' => 128,
+					'notnull' => true
+			),
+			'title' => array(
+					'type' => 'text',
+					'length' => 128,
+					'notnull' => false
+			),
+			'task' => array(
+				'type' => 'blob',
+				'notnull' => false
+			),
+			'authors' => array(
+				'type' => 'blob',
+				'notnull' => false
+			),
+			'solution' => array(
+					'type' => 'blob',
+					'notnull' => false
+			),
+			'created_at' => array(
+					'type' => 'timestamp',
+					'default' => 'CURRENT_TIMESTAMP',
+					'notnull' => true
+			)
+	);
+	
+	if(!$ilDB->tableExists($table_name))
+	{
+		$ilDB->createTable($table_name, $table_fields);
+		$ilDB->addPrimaryKey($table_name, array("epadl_id"));
+	}
+?>
