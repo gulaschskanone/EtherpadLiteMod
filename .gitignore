@@ -48,8 +48,8 @@ development
 
 to do
 
-eplmod
-
-exports
+*.log
 
 backups
+
+exports_*
