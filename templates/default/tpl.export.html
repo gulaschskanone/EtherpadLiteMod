@@ -4,13 +4,15 @@
 		<div class="ilFormCmds"></div>
 	</div>
 	<div>
-		{EXPORT_VIEW_TITLE}<br/>
-		<small>{EXPORT_VIEW_CREATION}</small><br/>
-		<a href="{EXPORT_DOWNLOAD}" target="_blank" type="button" class="btn btn-default btn-sm" id="print-button">Download</a>
+		<h3>Titel: {EXPORT_VIEW_TITLE}</h3>
+		<small>Datum: {EXPORT_VIEW_CREATION}</small><br/><br/>
+		<a href="{EXPORT_DOWNLOADPDF}" type="button" class="btn btn-default btn-sm" id="pdf-button">Download als PDF</a>
+		&nbsp;
+		<a href="{EXPORT_DOWNLOADXML}" type="button" class="btn btn-default btn-sm" id="xml-button">Download als XML</a>
 	</div>
-	<br/>
 <!-- END export_view -->
-
+	<br/><br/>
+	
 <!-- BEGIN export_form -->
 	{EXPORT_FORM}
 	
