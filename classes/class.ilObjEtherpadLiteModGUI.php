@@ -156,7 +156,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         // export
         if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
         {
-        	$ilTabs->addTab("export", "Export", $ilCtrl->getLinkTarget($this, "export"));
+        	$ilTabs->addTab("export", "Sichern und Exportieren", $ilCtrl->getLinkTarget($this, "export"));
         }
 
     }
@@ -1265,7 +1265,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	$this->authors_form_gui->addItem($author_list);
     	
     	// Pad Text
-    	$text = new ilCustomInputGUI("<b>Lösung:</b>", "solution");
+    	$text = new ilCustomInputGUI("<b>Lösung:</b>", "proposal");
     	$this->object->init();
     	try {
     		$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
@@ -1275,9 +1275,20 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	}
     	$this->authors_form_gui->addItem($text);
     	
+    	// commented Pad Text
+    	$ctext = new ilCustomInputGUI("<b>Kommentierte Lösung:</b>", "commented_proposal");
+    	// $this->object->init();
+    	try {
+    		// $padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
+    		$ctext->setHtml("x");
+    	} catch (Exception $e) {
+    		$ctext->setHtml("<pre>FEHLER</pre>");
+    	}
+    	$this->authors_form_gui->addItem($ctext);
+    	
     	
     	// buttons and action
-    	$this->authors_form_gui->setTitle((($mode == "new") ? "Exportieren" : "Erneut exportieren"));
+    	$this->authors_form_gui->setTitle("Aktuellen Stand sichern");
     	$this->authors_form_gui->setDescription("Vorschau und Autorenauswahl");
     	if($mode == "new") 
     	{
@@ -1318,9 +1329,9 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     		// set task
     		$this->EtherpadLiteExport->setTask($this->object->getTask());
     	
-    		// set solution
+    		// set proposal
     		$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
-    		$this->EtherpadLiteExport->setSolution($padContents->html);   		
+    		$this->EtherpadLiteExport->setProposal($padContents->html);   		
     		
 	    	// set POST-vars
     		$this->initExportForm();
@@ -1379,9 +1390,9 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	    	// set task
 	    	$this->EtherpadLiteExport->setTask($this->object->getTask());
 	    	
-	    	// set solution
+	    	// set proposal
 	    	$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
-	    	$this->EtherpadLiteExport->setSolution($padContents->html);
+	    	$this->EtherpadLiteExport->setProposal($padContents->html);
 
 	    	// set POST-vars
     		$this->initExportForm();
@@ -1422,11 +1433,9 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		$ilCtrl->redirect($this, "export");
     }
     
-
-    
-    
+   
     /**
-     * export page
+     * export (save state into database)
      * 
      */
     public function export(){
@@ -1486,7 +1495,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	{
 	    	$customTpl = new ilTemplate("tpl.exportPDF.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
 	    	$customTpl->setVariable("TASKDESC", $this->EtherpadLiteExport->getTask());
-	    	$customTpl->setVariable("PADTEXT", $this->EtherpadLiteExport->getSolution());
+	    	$customTpl->setVariable("PADTEXT", $this->EtherpadLiteExport->getProposal());
 	    	$customTpl->setVariable("PADTITLE", $this->EtherpadLiteExport->getTitle());
 	    	$customTpl->setVariable("PADAUTHORS", "- ".implode("<br/>- ", $this->EtherpadLiteExport->getAuthors()));
 	    	$this->generatePDF($customTpl->get(), "D", "export_".$this->object->getEtherpadLiteID());
@@ -1524,7 +1533,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 					$task = $xml->createElement( "task", $this->EtherpadLiteExport->getTask() );
 					$root->appendChild( $task );
 					
-					$proposal = $xml->createElement( "solution", $this->EtherpadLiteExport->getSolution() );
+					$proposal = $xml->createElement( "proposal", $this->EtherpadLiteExport->getProposal() );
 						$authors = $xml->createElement("authors");
 							foreach($this->EtherpadLiteExport->getAuthors() as $author_name)
 							{
@@ -1539,7 +1548,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 						
 			// Output headers
 			header('Content-type: "text/xml"; charset="utf8"');
-			header('Content-disposition: attachment; filename="example.xml"');
+			header('Content-disposition: attachment; filename="export_'.$this->EtherpadLiteExport->getEpadlID().'.xml"');
 			
 			// Output content
 			echo $xml->saveXML();

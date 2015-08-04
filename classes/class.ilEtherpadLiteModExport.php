@@ -14,7 +14,7 @@ class ilEtherpadLiteModExport
 	protected $authors = array();
 	protected $task = "";
 	protected $title = "";
-	protected $solution = "";
+	protected $proposal = "";
 	
 
 	/**
@@ -35,12 +35,12 @@ class ilEtherpadLiteModExport
 	{
 		global $ilDB;
 		
-		$ilDB->manipulate("INSERT INTO rep_robj_xct_exports (epadl_id, title, task, authors, solution) VALUES (" .
+		$ilDB->manipulate("INSERT INTO rep_robj_xct_exports (epadl_id, title, task, authors, proposal) VALUES (" .
 				$ilDB->quote($this->getEpadlID(), "text") . "," .
 				$ilDB->quote($this->getTitle(), "text") . "," .
 				$ilDB->quote($this->getTask(), "text") . "," .
 				$ilDB->quote(serialize($this->getAuthors()), "text") . "," .
-				$ilDB->quote($this->getSolution(), "text") . 
+				$ilDB->quote($this->getProposal(), "text") . 
 			")");
 	}
 	
@@ -54,7 +54,7 @@ class ilEtherpadLiteModExport
 		$ilDB->manipulate($up = "UPDATE rep_robj_xct_exports SET " .
 				" task = " . $ilDB->quote($this->getTask(), "text").  "," .
 				" title = " . $ilDB->quote($this->getTitle(), "text").  "," .
-				" solution = " . $ilDB->quote($this->getSolution(), "text").  "," .
+				" proposal = " . $ilDB->quote($this->getProposal(), "text").  "," .
 				" created_at = now() ," .
 				" authors = " . $ilDB->quote(serialize($this->getAuthors()), "text").
 				" WHERE epadl_id = " . $ilDB->quote($this->getEpadlID(), "text")
@@ -81,7 +81,7 @@ class ilEtherpadLiteModExport
 		{
 			$this->setTask($rec["task"]);
 			$this->setTitle($rec["title"]);
-			$this->setSolution($rec["solution"]);
+			$this->setProposal($rec["proposal"]);
 			$this->setAuthors(unserialize($rec["authors"]));
 			$this->setCreatedAt($rec["created_at"]);
 		}
@@ -196,24 +196,24 @@ class ilEtherpadLiteModExport
 
     
     /**
-     * Set solution
+     * Set proposal
      *
      * @param    string
      */
-    public function setSolution($a_val)
+    public function setProposal($a_val)
     {
-    	$this->solution = $a_val;
+    	$this->proposal = $a_val;
     }
     
     
     /**
-     * Get solution
+     * Get proposal
      *
      * @return    string
      */
-    public function getSolution()
+    public function getProposal()
     {
-    	return $this->solution;
+    	return $this->proposal;
     }
     
     /**

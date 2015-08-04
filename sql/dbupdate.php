@@ -593,7 +593,7 @@ foreach($sql as $s)
 				'type' => 'blob',
 				'notnull' => false
 			),
-			'solution' => array(
+			'proposal' => array(
 					'type' => 'blob',
 					'notnull' => false
 			),
