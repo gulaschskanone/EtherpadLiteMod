@@ -73,6 +73,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
            	case "exportFormUpdate":
            	case "downloadPDF":
            	case "downloadXML":
+           	case "downloadCXML":
                 $this->checkPermission("write");
                 $this->$cmd();
                 break;
@@ -1265,7 +1266,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	$this->authors_form_gui->addItem($author_list);
     	
     	// Pad Text
-    	$text = new ilCustomInputGUI("<b>Lösung:</b>", "proposal");
+    	$text = new ilCustomInputGUI("<b>Lösung (ohne Kommentare):</b>", "proposal");
     	$this->object->init();
     	try {
     		$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
@@ -1274,18 +1275,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     		$text->setHtml("<pre>FEHLER</pre>");
     	}
     	$this->authors_form_gui->addItem($text);
-    	
-    	// commented Pad Text
-    	$ctext = new ilCustomInputGUI("<b>Kommentierte Lösung:</b>", "commented_proposal");
-    	// $this->object->init();
-    	try {
-    		// $padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
-    		$ctext->setHtml("x");
-    	} catch (Exception $e) {
-    		$ctext->setHtml("<pre>FEHLER</pre>");
-    	}
-    	$this->authors_form_gui->addItem($ctext);
-    	
     	
     	// buttons and action
     	$this->authors_form_gui->setTitle("Aktuellen Stand sichern");
@@ -1332,6 +1321,13 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     		// set proposal
     		$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
     		$this->EtherpadLiteExport->setProposal($padContents->html);   		
+    		
+    		// set commented proposal
+    	 	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
+	    	$this->adminSettings = new ilEtherpadLiteModConfig();
+	    	$etherpad_url = ($this->adminSettings->getValue("https") ? "https" : "http") . "://" . $this->adminSettings->getValue("host") .":". $this->adminSettings->getValue("port");
+	    	$pad_xml_uri = "/p/".$this->object->getEtherpadLiteID()."/export/xml?lineattribs=true&pretty=true";
+	    	$this->EtherpadLiteExport->setCProposal(file_get_contents($etherpad_url.$pad_xml_uri));
     		
 	    	// set POST-vars
     		$this->initExportForm();
@@ -1393,12 +1389,19 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 	    	// set proposal
 	    	$padContents = $this->object->getEtherpadLiteConnection()->getHTML($this->object->getEtherpadLiteID());
 	    	$this->EtherpadLiteExport->setProposal($padContents->html);
+	    	
+    		// set commented proposal
+    	 	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModConfig.php");
+	    	$this->adminSettings = new ilEtherpadLiteModConfig();
+	    	$etherpad_url = ($this->adminSettings->getValue("https") ? "https" : "http") . "://" . $this->adminSettings->getValue("host") .":". $this->adminSettings->getValue("port");
+	    	$pad_xml_uri = "/p/".$this->object->getEtherpadLiteID()."/export/xml?lineattribs=true&pretty=true";
+	    	$this->EtherpadLiteExport->setCProposal(file_get_contents($etherpad_url.$pad_xml_uri));
 
 	    	// set POST-vars
     		$this->initExportForm();
     		if ($this->authors_form_gui->checkInput() && $this->authors_form_gui->getInput("title"))
     		{
-    			// set authors
+    			// set contributors
     			foreach($_POST["authors"] as $usr_id => $nickname)
     			{
     				if(substr_count($nickname, '*') == 1)
@@ -1454,10 +1457,11 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 			// view
 			$customTpl->setCurrentBlock("export_view");
 			$customTpl->setVariable("EXPORT_VIEW_TITLE", $this->EtherpadLiteExport->getTitle());
-			$customTpl->setVariable("EXPORT_VIEW_CREATION", $this->EtherpadLiteExport->getCreatedAt());
+			$customTpl->setVariable("EXPORT_VIEW_CREATION", $this->EtherpadLiteExport->getCreatedAt());			
 			// $customTpl->setVariable("EXPORT_DOWNLOAD", self::MODULEPATH."exports/export_".$this->EtherpadLiteExport->getEpadlID().".pdf"); 
 			$customTpl->setVariable("EXPORT_DOWNLOADPDF", $ilCtrl->getLinkTarget($this, "downloadPDF"));
 			$customTpl->setVariable("EXPORT_DOWNLOADXML", $ilCtrl->getLinkTarget($this, "downloadXML"));
+			$customTpl->setVariable("EXPORT_DOWNLOADCXML", $ilCtrl->getLinkTarget($this, "downloadCXML"));
 			
 			$customTpl->parseCurrentBlock();
 			
@@ -1505,7 +1509,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     /*
      * download as xml
     */
-    public function downloadXML()
+    public function downloadXML($comments = FALSE)
     {
     	include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/classes/class.ilEtherpadLiteModExport.php");
     	$this->EtherpadLiteExport = new ilEtherpadLiteModExport();
@@ -1513,53 +1517,66 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	$this->EtherpadLiteExport->setEpadlID($this->object->getEtherpadLiteID());
     	if($this->EtherpadLiteExport->doRead())
     	{
-			// "Create" the document.
-			$xml = new DOMDocument( "1.0");
-			$xml->formatOutput = true;
+    		// builder
+			include_once "./Services/Xml/classes/class.ilXmlWriter.php";
+			$xml_writer = new ilXmlWriter();
+			$xml_writer->xmlHeader();
+			$xml_writer->xmlStartTag('export', array("savedate" => $this->EtherpadLiteExport->getCreatedAt()));
+				// childs
+				// $xml_writer->xmlElement('padid', null, $this->EtherpadLiteExport->getEpadlID());
+				$xml_writer->xmlElement('title', null, $this->EtherpadLiteExport->getTitle());
+				$xml_writer->xmlElement('task', array("type" => "html"), $this->EtherpadLiteExport->getTask(), false, false);
+				$xml_writer->xmlStartTag('pad', array("id"=> $this->EtherpadLiteExport->getEpadlID()));
+					// proposal
+					if($comments)
+					{
+						$xml_writer->xmlComment(' ep_xmlexport');
+							$dom = new DOMDocument();
+							$dom->formatOutput = false;
+							$dom->loadXML($this->EtherpadLiteExport->getCProposal());
+							$content_node = $dom->getElementsByTagName("content")->item(0);
+						$xml_writer->xmlData($dom->saveXML($content_node), false, false);
+							$comments_node = $dom->getElementsByTagName("comments")->item(0);
+						$xml_writer->xmlData($dom->saveXML($comments_node), false, false);
+						$xml_writer->xmlComment(' /ep_xmlexport');
+					}
+					else 
+					{
+						$xml_writer->xmlStartTag('content', array("type" => "html"));
+							$dom = new DOMDocument();
+							$dom->formatOutput = true;
+							$dom->loadHTML($this->EtherpadLiteExport->getProposal());
+							$body = $dom->getElementsByTagName("body")->item(0);
+						$xml_writer->xmlData($dom->saveXML($body), false, false);
+						$xml_writer->xmlEndTag('content');
+					}
+					
+					// contributor list
+					$xml_writer->xmlStartTag('contributors');
+					foreach($this->EtherpadLiteExport->getAuthors() as $author_name)
+					{				
+						$xml_writer->xmlElement('author', array("name" => str_replace(" *", "", $author_name), "isnickname" => ((substr_count($author_name, ' *') == 1) ? "true" : "false")));
+					}			
+					$xml_writer->xmlEndTag('contributors');
+					
+				$xml_writer->xmlEndTag('pad');
+			$xml_writer->xmlEndTag('export');
 			
-				// root
-				$root = $xml->createElement( "export" );
-					
-					// attributes
-					$root->setAttribute( "savedate", $this->EtherpadLiteExport->getCreatedAt() );
-										
-					// childs
-					$epadl_id = $xml->createElement( "padid", $this->EtherpadLiteExport->getEpadlID() );
-					$root->appendChild( $epadl_id );
-					
-					$title = $xml->createElement( "title", $this->EtherpadLiteExport->getTitle() );
-					$root->appendChild( $title );
-					
-					$task = $xml->createElement( "task", $this->EtherpadLiteExport->getTask() );
-					$root->appendChild( $task );
-					
-					$proposal = $xml->createElement( "proposal", $this->EtherpadLiteExport->getProposal() );
-						$authors = $xml->createElement("authors");
-							foreach($this->EtherpadLiteExport->getAuthors() as $author_name)
-							{
-								$author = $xml->createElement("author", str_replace(" *", "", $author_name));
-								$author->setAttribute( "isnickname", ((substr_count($author_name, ' *') == 1) ? "true" : "false"));
-								$authors->appendChild( $author );
-							}
-						$proposal->appendChild( $authors );
-					$root->appendChild( $proposal );
-			
-			$xml->appendChild( $root );
-						
-			// Output headers
-			header('Content-type: "text/xml"; charset="utf8"');
-			header('Content-disposition: attachment; filename="export_'.$this->EtherpadLiteExport->getEpadlID().'.xml"');
-			
-			// Output content
-			echo $xml->saveXML();
+			$this->generateXML($xml_writer->xmlDumpMem(false), "D","export_".$this->EtherpadLiteExport->getEpadlID());
 			
     	}
     }
     
+    /*
+     * download xml with comments
+     */
+	public function downloadCXML(){
+		$this->downloadXML(true);
+	}
+    
     /**
      * pdf generation
      */
-    
     public static function generatePDF($pdf_output, $output_mode, $filename=null) // (I - Inline, D - Download, F - File)
     {  	   	   	
     	// filename
@@ -1588,6 +1605,40 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     
     	ilPDFGeneration::doJob($job);
     }    
+    
+	/**
+	 * xml generation
+	 */
+    public function generateXML($xml_output, $output_mode, $filename=null) // (D - Download, F - File)
+    {
+    	global $ilCtrl;
+    	
+    	// filename
+    	if (substr($filename, strlen($filename) - 4, 4) != '.xml')
+    	{
+    		$filename .= '.xml';
+    	}
 
+    	include_once "./Services/Xml/classes/class.ilXmlWriter.php";
+    	$xml_writer = new ilXmlWriter();
+    	$xml_writer->xmlData($xml_output, false, false);
+    	
+    	if($output_mode == "F")
+    	{
+    		$filename = self::MODULEPATH."exports/".$filename;
+    		$xml_writer->xmlDumpFile($filename);
+    		$ilCtrl->redirect($this, "export");
+    	}
+    	elseif($output_mode == "D")
+    	{
+    		ob_start();
+    		header('Content-type: "text/xml"; charset="utf8"');
+    		header('Content-disposition: attachment; filename="'.$filename.'"');
+    		print $xml_writer->xmlDumpMem(TRUE);
+    		ob_flush();
+    		exit();
+    	}
+
+    }
 }
 ?>

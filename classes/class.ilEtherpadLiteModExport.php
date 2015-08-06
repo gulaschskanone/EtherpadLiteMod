@@ -15,6 +15,7 @@ class ilEtherpadLiteModExport
 	protected $task = "";
 	protected $title = "";
 	protected $proposal = "";
+	protected $c_proposal = "";
 	
 
 	/**
@@ -35,12 +36,13 @@ class ilEtherpadLiteModExport
 	{
 		global $ilDB;
 		
-		$ilDB->manipulate("INSERT INTO rep_robj_xct_exports (epadl_id, title, task, authors, proposal) VALUES (" .
+		$ilDB->manipulate("INSERT INTO rep_robj_xct_exports (epadl_id, title, task, authors, proposal, c_proposal) VALUES (" .
 				$ilDB->quote($this->getEpadlID(), "text") . "," .
 				$ilDB->quote($this->getTitle(), "text") . "," .
 				$ilDB->quote($this->getTask(), "text") . "," .
 				$ilDB->quote(serialize($this->getAuthors()), "text") . "," .
-				$ilDB->quote($this->getProposal(), "text") . 
+				$ilDB->quote($this->getProposal(), "text") . "," .
+				$ilDB->quote($this->getCProposal(), "text") . 
 			")");
 	}
 	
@@ -55,6 +57,7 @@ class ilEtherpadLiteModExport
 				" task = " . $ilDB->quote($this->getTask(), "text").  "," .
 				" title = " . $ilDB->quote($this->getTitle(), "text").  "," .
 				" proposal = " . $ilDB->quote($this->getProposal(), "text").  "," .
+				" c_proposal = " . $ilDB->quote($this->getCProposal(), "text").  "," .
 				" created_at = now() ," .
 				" authors = " . $ilDB->quote(serialize($this->getAuthors()), "text").
 				" WHERE epadl_id = " . $ilDB->quote($this->getEpadlID(), "text")
@@ -82,6 +85,7 @@ class ilEtherpadLiteModExport
 			$this->setTask($rec["task"]);
 			$this->setTitle($rec["title"]);
 			$this->setProposal($rec["proposal"]);
+			$this->setCProposal($rec["c_proposal"]);
 			$this->setAuthors(unserialize($rec["authors"]));
 			$this->setCreatedAt($rec["created_at"]);
 		}
@@ -215,6 +219,28 @@ class ilEtherpadLiteModExport
     {
     	return $this->proposal;
     }
+    
+    /**
+     * Set commented proposal
+     *
+     * @param    string
+     */
+    public function setCProposal($a_val)
+    {
+    	$this->c_proposal = $a_val;
+    }
+    
+    
+    /**
+     * Get commented proposal
+     *
+     * @return    string
+     */
+    public function getCProposal()
+    {
+    	return $this->c_proposal;
+    }
+    
     
     /**
      * add author

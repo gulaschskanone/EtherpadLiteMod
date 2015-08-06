@@ -593,7 +593,7 @@ foreach($sql as $s)
 				'type' => 'blob',
 				'notnull' => false
 			),
-			'proposal' => array(
+			'solution' => array(
 					'type' => 'blob',
 					'notnull' => false
 			),
@@ -608,5 +608,22 @@ foreach($sql as $s)
 	{
 		$ilDB->createTable($table_name, $table_fields);
 		$ilDB->addPrimaryKey($table_name, array("epadl_id"));
+	}
+?>
+
+<#23>
+<?php 
+	// rename column
+	$res = $ilDB->query("ALTER TABLE `rep_robj_xct_exports` CHANGE `solution` `proposal` LONGBLOB;");
+
+	$table = "rep_robj_xct_exports";
+	$field = "c_proposal";
+	if(!$ilDB->tableColumnExists($table,$field))
+	{
+		$ilDB->addTableColumn($table, $field, array(
+				'type' => 'blob',
+				'notnull' => false
+		)
+		);
 	}
 ?>
