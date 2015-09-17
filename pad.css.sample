@@ -21,12 +21,12 @@
 /* improve typeface */
 h1, h2, h3 {padding: 10px 0;}
 h4, h5, h6 {padding: 5px 0;}
-h1, .toch1 {font-size:1.5em !important;}
-h2, .toch2 {font-size:1.4em !important;}
-h3, .toch3 {font-size:1.3em !important;}
-h4, .toch4 {font-size:1.2em !important;}
-h5, .toch5 {font-size:1.1em !important;}
-h6, .toch6 {font-size:1.0em !important;}
+h1, .toch1 {font-size:1.4em !important;}
+h2, .toch2 {font-size:1.3em !important;}
+h3, .toch3 {font-size:1.2em !important;}
+h4, .toch4 {font-size:1.1em !important;}
+h5, .toch5 {font-size:1.0em !important;}
+h6, .toch6 {font-size:0.9em !important;}
 
 #innerdocbody {
   font-size: 1.4em !important;
@@ -35,27 +35,4 @@ h6, .toch6 {font-size:1.0em !important;}
 
 #innerdocbody > div {
 	padding-bottom:10px;
-}
-
-/*
- * ep_stats support
- */
-#stats
-{
-	z-index:auto !important;
-	position:relative !important;
-	right:0px !important;
-	width:100% !important;
-	background-color:transparent !important;
-	padding:20px 0 0 0 !important;
-	top:0px !important;
-}
-#stats div
-{
-	background-color:transparent !important;
-}
-
-.statsAuthorColor
-{
-	background-color:transparent !important;
 }

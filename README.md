@@ -1,6 +1,7 @@
 # Etherpad Lite Plugin for ILIAS - University of Passau MOD
 This plugin based on jrocho/ILIAS-Etherpad-Lite-Plugin v1.1.2
 
+tested with EPL version 1.5.7
 
 
 ## Installation ##
@@ -10,7 +11,7 @@ After installing ILIAS and etherpad copy the plugin files to *Customizing/global
 Set write permissions on */log/* and */exports/*.
 
 ### Customized configuration (files) ###
-Copy the files *pad.[js|css].sample* to *node_modules/ep_etherpad-lite/static/custom/pad.[js|css]* within your etherpad-lite (server) folder and set in the *settings.json*
+Copy the files *pad.[js|css].sample* to *node_modules/ep_etherpad-lite/static/custom/pad.[js|css]* within your etherpad-lite (server) folder and set in *settings.json*
 
 `"minify" : false,`
 
@@ -22,7 +23,7 @@ Copy the files *pad.[js|css].sample* to *node_modules/ep_etherpad-lite/static/cu
 
 
 ### Install Dependencies / Extensions ###
-`npm install ep_comments_page ep_table_of_contents ep_page_view ep_spellcheck ep_stats ep_xmlexport`
+`npm install ep_comments_page ep_table_of_contents ep_page_view ep_spellcheck ep_xmlexport ep_brightcolorpicker ep_resizable_bars`
 
 ### Activate Plugin in ILIAS ###
 ... on *Administration >> Plugins*. 
