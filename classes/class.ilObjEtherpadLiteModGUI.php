@@ -212,7 +212,7 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
         $this->form->addItem($cb);     
         
 	    // task
-        $task = new ilTextAreaInputGUI("Aufgabenstellung", "xct_task");
+        $task = new ilTextAreaInputGUI("Aufgabenstellung (kurz)", "xct_task");
         $task->setUseRte(true);
         $task->setRteTagSet('mini');
         $this->form->addItem($task);
@@ -1497,12 +1497,78 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
     	$this->EtherpadLiteExport->setEpadlID($this->object->getEtherpadLiteID());
     	if($this->EtherpadLiteExport->doRead())
     	{
-	    	$customTpl = new ilTemplate("tpl.exportPDF.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod");
-	    	$customTpl->setVariable("TASKDESC", $this->EtherpadLiteExport->getTask());
-	    	$customTpl->setVariable("PADTEXT", $this->EtherpadLiteExport->getProposal());
-	    	$customTpl->setVariable("PADTITLE", $this->EtherpadLiteExport->getTitle());
-	    	$customTpl->setVariable("PADAUTHORS", "- ".implode("<br/>- ", $this->EtherpadLiteExport->getAuthors()));
-	    	$this->generatePDF($customTpl->get(), "D", "export_".$this->object->getEtherpadLiteID());
+    		// paths
+			define('FPDF_INSTALLDIR', './Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/libs/fpdf/');
+			define('FPDF_FONTPATH', FPDF_INSTALLDIR.'font/');
+			define('FPDF_TPLPATH', './Customizing/global/plugins/Services/Repository/RepositoryObject/EtherpadLiteMod/templates/exports/');
+			   		
+    		require_once(FPDF_INSTALLDIR.'fpdf.php');
+    		require_once(FPDF_INSTALLDIR.'fpdi.php');
+    		require_once(FPDF_INSTALLDIR.'fpdf_html.php');
+    		    		
+    		$pdf = new PDF_HTML();
+    		$pdf->setSourceFile(FPDF_TPLPATH.'template.pdf');
+    		$tplidx = $pdf->ImportPage(1);
+    		$pdf->AddPage();
+    		$pdf->useTemplate($tplidx, 0, 0, 0, 0, true);
+    		
+    		// fonts
+    		$pdf->AddFont('Calibri','B','calibrib.php');
+    		$pdf->AddFont('Calibri','','calibri.php');
+    		$pdf->AddFont('Calibri','I','calibrii.php');
+    		$pdf->AddFont('Calibri','BI','calibriz.php');
+    		
+    		// Seitenabstand
+    		$pdf->SetMargins(20, 20, 20);
+    		$pdf->SetAutoPageBreak(true, 30);
+    		
+    		// Meta
+    		$pdf->SetAuthor('s. Text');
+    		$pdf->SetTitle("c.t.-Klausurlösung");
+    		
+    		// Datum
+    		$pdf->SetFont('Calibri', '', 10 );
+    		$pdf->text(160,56,"Passau, ".date('d.m.Y'));
+    		
+    		// title
+    		$pdf->setXY(20, 80);
+    		$pdf->SetFont('Calibri', 'B', 26 );
+    		$pdf->Cell(0, 8, utf8_decode($this->EtherpadLiteExport->getTitle()), 0, 0, 'C');
+    		
+			// task
+			$pdf->Ln(15);
+    		$pdf->SetFont('Calibri', 'B', 14 );
+    		$pdf->Write(5, 'Aufgabenstellung');
+    		$pdf->SetFont('Calibri', '', 12);
+    		$pdf->WriteHTML(utf8_decode($this->EtherpadLiteExport->getTask()));
+    		$pdf->Ln(15);
+    		
+    		// authors
+    		$pdf->SetFont('Calibri', 'B', 14 );
+    		$pdf->Write(5, 'Autoren');
+    		$pdf->Ln(10);
+			$column_width = $pdf->w-30;
+			$bulletsOut = array();
+			$bulletsOut['bullet'] = chr(149);
+			$bulletsOut['margin'] = ' ';
+			$bulletsOut['indent'] = 0;
+			$bulletsOut['spacer'] = 0;
+			$bulletsOut['text'] = $this->EtherpadLiteExport->getAuthors();
+			$pdf->SetFont('Calibri', '', 12);
+			$pdf->MultiCellBltArray($column_width-$pdf->x, 6, $bulletsOut);
+			$pdf->SetFont('Calibri', '', 10);
+			$pdf->Write(5, utf8_decode('* Pseudonym. Autor möchte nicht genannt werden.'));
+			$pdf->Ln(15);
+    		
+    		// result
+    		$pdf->SetFont('Calibri', 'B', 14 );
+    		$pdf->Write(5, utf8_decode('Lösung'));
+    		$pdf->Ln(5);
+    		$pdf->SetFont('Calibri', '', 12);
+    		$pdf->WriteHTML(utf8_decode(html_entity_decode($this->EtherpadLiteExport->getProposal()) ));
+    		$pdf->Ln(15);
+    		
+    		return $pdf->Output("export_".$this->object->getEtherpadLiteID().".pdf", 'D');
     	}
     }
     
@@ -1574,37 +1640,6 @@ class ilObjEtherpadLiteModGUI extends ilObjectPluginGUI
 		$this->downloadXML(true);
 	}
     
-    /**
-     * pdf generation
-     */
-    public static function generatePDF($pdf_output, $output_mode, $filename=null) // (I - Inline, D - Download, F - File)
-    {  	   	   	
-    	// filename
-    	if (substr($filename, strlen($filename) - 4, 4) != '.pdf')
-    	{
-    		$filename .= '.pdf';
-    	}
-    	if($output_mode == "F")
-    	{
-    		$filename = self::MODULEPATH."exports/".$filename;
-    	}    
-    	
-    	// processing
-    	require_once './Services/PDFGeneration/classes/class.ilPDFGeneration.php';
-    
-    	$job = new ilPDFGenerationJob();
-    	$job->setAutoPageBreak(true)
-    	->setCreator('Compliant Teamwork')
-    	->setFilename($filename)
-    	->setMarginLeft('20')
-    	->setMarginRight('20')
-    	->setMarginTop('20')
-    	->setMarginBottom('20')
-    	->setOutputMode($output_mode)
-    	->addPage($pdf_output);
-    
-    	ilPDFGeneration::doJob($job);
-    }    
     
 	/**
 	 * xml generation

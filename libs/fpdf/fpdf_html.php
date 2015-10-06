@@ -1,0 +1,285 @@
+<?php
+//HTML2PDF by Clément Lavoillotte
+//ac.lavoillotte@noos.fr
+//webmaster@streetpc.tk
+//http://www.streetpc.tk
+
+// and 
+// Radek Hulán (hulan@hulan.info)
+// http://www.fpdf.org/en/script/script53.php
+
+
+//function hex2dec
+//returns an associative array (keys: R,G,B) from
+//a hex html code (e.g. #3FE5AA)
+function hex2dec($couleur = "#000000"){
+    $R = substr($couleur, 1, 2);
+    $rouge = hexdec($R);
+    $V = substr($couleur, 3, 2);
+    $vert = hexdec($V);
+    $B = substr($couleur, 5, 2);
+    $bleu = hexdec($B);
+    $tbl_couleur = array();
+    $tbl_couleur['R']=$rouge;
+    $tbl_couleur['V']=$vert;
+    $tbl_couleur['B']=$bleu;
+    return $tbl_couleur;
+}
+
+//conversion pixel -> millimeter at 72 dpi
+function px2mm($px){
+    return $px*25.4/72;
+}
+
+function txtentities($html){
+    $trans = get_html_translation_table(HTML_ENTITIES);
+    $trans = array_flip($trans);
+    return strtr($html, $trans);
+}
+////////////////////////////////////
+
+class PDF_HTML extends FPDI
+{
+//variables of html parser
+var $B;
+var $I;
+var $U;
+var $HREF;
+var $fontList;
+var $issetfont;
+var $issetcolor;
+
+function PDF_HTML($orientation='P', $unit='mm', $format='A4')
+{
+    //Call parent constructor
+    $this->FPDF($orientation,$unit,$format);
+    //Initialization
+    $this->B=0;
+    $this->I=0;
+    $this->U=0;
+    $this->HREF='';
+    $this->issetfont=false;
+    $this->issetcolor=false;
+    $this->PRE=false;
+    $this->fontlist=array("Times","Courier");
+    $this->issetfont=false;
+    $this->issetcolor=false;
+    $this->AliasNbPages();
+    
+}
+
+function WriteHTML($html)
+{
+    //HTML parser
+    $html=strip_tags($html,"<b><u><i><a><img><p><br><strong><em><font><tr><blockquote><h1><h2><h3><h4>"); //supprime tous les tags sauf ceux reconnus
+    $html=str_replace("\n",' ',$html); //remplace retour à la ligne par un espace
+    $a=preg_split('/<(.*)>/U',$html,-1,PREG_SPLIT_DELIM_CAPTURE); //éclate la chaîne avec les balises
+    foreach($a as $i=>$e)
+    {
+        if($i%2==0)
+        {
+            //Text
+            if($this->HREF)
+                $this->PutLink($this->HREF,$e);
+            else
+                $this->Write(5,stripslashes(txtentities($e)));
+        }
+        else
+        {
+            //Tag
+            if($e[0]=='/')
+                $this->CloseTag(strtoupper(substr($e,1)));
+            else
+            {
+                //Extract attributes
+                $a2=explode(' ',$e);
+                $tag=strtoupper(array_shift($a2));
+                $attr=array();
+                foreach($a2 as $v)
+                {
+                    if(preg_match('/([^=]*)=["\']?([^"\']*)/',$v,$a3))
+                        $attr[strtoupper($a3[1])]=$a3[2];
+                }
+                $this->OpenTag($tag,$attr);
+            }
+
+        }
+    }
+}
+
+function OpenTag($tag, $attr)
+{
+    //Opening tag
+    switch($tag){
+        case 'STRONG':
+            $this->SetStyle('B',true);
+            break;
+        case 'EM':
+            $this->SetStyle('I',true);
+            break;
+        case 'B':
+        case 'I':
+        case 'U':
+            $this->SetStyle($tag,true);
+            break;
+        case 'A':
+            $this->HREF=$attr['HREF'];
+            break;
+        case 'IMG':
+            if(isset($attr['SRC']) && (isset($attr['WIDTH']) || isset($attr['HEIGHT']))) {
+                if(!isset($attr['WIDTH']))
+                    $attr['WIDTH'] = 0;
+                if(!isset($attr['HEIGHT']))
+                    $attr['HEIGHT'] = 0;
+                $this->Image($attr['SRC'], $this->GetX(), $this->GetY(), px2mm($attr['WIDTH']), px2mm($attr['HEIGHT']));
+            }
+            break;
+        case 'TR':
+        case 'BLOCKQUOTE':
+        case 'BR':
+            $this->Ln(5);
+            break;
+        case 'P':
+            $this->Ln(10);
+            break;
+        case 'FONT':
+            if (isset($attr['COLOR']) && $attr['COLOR']!='') {
+                $coul=hex2dec($attr['COLOR']);
+                $this->SetTextColor($coul['R'],$coul['V'],$coul['B']);
+                $this->issetcolor=true;
+            }
+            if (isset($attr['FACE']) && in_array(strtolower($attr['FACE']), $this->fontlist)) {
+                $this->SetFont(strtolower($attr['FACE']));
+                $this->issetfont=true;
+            }
+            break;
+		case 'H1':
+		case 'H2':
+		case 'H3':
+		case 'H4':
+		case 'H5':
+           	$this->Ln(5);
+           	$this->SetFontSize(14);
+           	break;
+    }
+}
+
+function CloseTag($tag)
+{
+    //Closing tag
+	if ($tag=='H1' || $tag=='H2' || $tag=='H3' || $tag=='H4'){
+		$this->Ln(6);
+		$this->SetFontSize(12);
+	}
+	
+    if($tag=='STRONG')
+        $tag='B';
+    if($tag=='EM')
+        $tag='I';
+    if($tag=='B' || $tag=='I' || $tag=='U')
+        $this->SetStyle($tag,false);
+    if($tag=='A')
+        $this->HREF='';
+    if($tag=='FONT'){
+        if ($this->issetcolor==true) {
+            $this->SetTextColor(0);
+        }
+        if ($this->issetfont) {
+            $this->SetFont('arial');
+            $this->issetfont=false;
+        }
+    }
+}
+
+function SetStyle($tag, $enable)
+{
+    //Modify style and select corresponding font
+    $this->$tag+=($enable ? 1 : -1);
+    $style='';
+    foreach(array('B','I','U') as $s)
+    {
+        if($this->$s>0)
+            $style.=$s;
+    }
+    $this->SetFont('',$style);
+}
+
+function PutLink($URL, $txt)
+{
+    //Put a hyperlink
+    $this->SetTextColor(0,0,255);
+    $this->SetStyle('U',true);
+    $this->Write(5,$txt,$URL);
+    $this->SetStyle('U',false);
+    $this->SetTextColor(0);
+}
+
+
+
+
+/************************************************************
+ *                                                           *
+*    MultiCell with bullet (array)                          *
+*                                                           *
+*    Requires an array with the following  keys:            *
+*                                                           *
+*        Bullet -> String or Number                         *
+*        Margin -> Number, space between bullet and text    *
+*        Indent -> Number, width from current x position    *
+*        Spacer -> Number, calls Cell(x), spacer=x          *
+*        Text -> Array, items to be bulleted                *
+*                                                           *
+************************************************************/
+
+function MultiCellBltArray($w, $h, $blt_array, $border=0, $align='J', $fill=0)
+{
+	if (!is_array($blt_array))
+	{
+		die('MultiCellBltArray requires an array with the following keys: bullet, margin, text, indent, spacer');
+		exit;
+	}
+
+	//Save x
+	$bak_x = $this->x;
+
+	for ($i=0; $i<sizeof($blt_array['text']); $i++)
+	{
+	//Get bullet width including margin
+		$blt_width = $this->GetStringWidth($blt_array['bullet'] . $blt_array['margin'])+$this->cMargin*2;
+
+		// SetX
+		$this->SetX($bak_x);
+
+		//Output indent
+		if ($blt_array['indent'] > 0)
+		$this->Cell($blt_array['indent']);
+
+		//Output bullet
+		$this->Cell($blt_width, $h, $blt_array['bullet'] . $blt_array['margin'], 0, '', $fill);
+
+		//Output text
+		$this->MultiCell($w-$blt_width, $h, $blt_array['text'][$i], $border, $align, $fill);
+
+				//Insert a spacer between items if not the last item
+		if ($i != sizeof($blt_array['text'])-1)
+			$this->Ln($blt_array['spacer']);
+
+			//Increment bullet if it's a number
+			if (is_numeric($blt_array['bullet']))
+			$blt_array['bullet']++;
+	}
+
+	//Restore x
+	$this->x = $bak_x;
+	}
+	
+	
+	function Footer()
+	{
+    	$this->SetFont('Calibri', '', 8 );
+    	$this->AliasNbPages('{GesamtanzahlSeiten}');
+    	$this->text(20,285,'Seite '.$this->PageNo().'/{GesamtanzahlSeiten}');
+	}
+
+}//end of class
+?>
