@@ -1,3 +1,5 @@
+**Note: Development was discontinued in 2015.**
+
 # Etherpad Lite Plugin for ILIAS - University of Passau MOD
 This plugin based on jrocho/ILIAS-Etherpad-Lite-Plugin v1.1.2
 
